@@ -1,10 +1,9 @@
+//imports
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
-
 import 'rxjs/add/operator/toPromise';
 
-
-
+//requires
 var firebase = require('firebase/app');
 require('firebase/database');
 

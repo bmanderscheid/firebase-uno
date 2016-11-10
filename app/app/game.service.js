@@ -8,8 +8,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+//imports
 var core_1 = require('@angular/core');
 require('rxjs/add/operator/toPromise');
+//requires
 var firebase = require('firebase/app');
 require('firebase/database');
 var GameService = (function () {
