@@ -12,6 +12,7 @@ var core_1 = require('@angular/core');
 var platform_browser_1 = require('@angular/platform-browser');
 var app_component_1 = require('./app.component');
 var game_component_1 = require('./game.component');
+var game_service_1 = require('./game.service');
 var AppModule = (function () {
     function AppModule() {
     }
@@ -19,7 +20,8 @@ var AppModule = (function () {
         core_1.NgModule({
             imports: [platform_browser_1.BrowserModule],
             declarations: [app_component_1.AppComponent, game_component_1.GameComponent],
-            bootstrap: [app_component_1.AppComponent]
+            bootstrap: [app_component_1.AppComponent],
+            providers: [game_service_1.GameService]
         }), 
         __metadata('design:paramtypes', [])
     ], AppModule);
