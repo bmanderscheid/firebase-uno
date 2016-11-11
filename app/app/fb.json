@@ -2,26 +2,6 @@
     "game_1234": {
         "deck": [
             {
-                "id": "r0",
-                "value": 0
-            },
-            {
-                "id": "g8",
-                "value": 8
-            },
-            {
-                "id": "y5",
-                "value": 5
-            },
-            {
-                "id": "r5",
-                "value": 5
-            },
-            {
-                "id": "r2",
-                "value": 2
-            },
-            {
                 "id": "b1",
                 "value": 1
             },
@@ -162,8 +142,31 @@
                 "value": 3
             }
         ],
-        "players":[
-            
-        ]
+        "players": {
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
+                "deck": [
+                    {
+                        "id": "r0",
+                        "value": 0
+                    },
+                    {
+                        "id": "g8",
+                        "value": 8
+                    },
+                    {
+                        "id": "y5",
+                        "value": 5
+                    },
+                    {
+                        "id": "r5",
+                        "value": 5
+                    },
+                    {
+                        "id": "r2",
+                        "value": 2
+                    }
+                ]
+            }
+        }
     }
 }

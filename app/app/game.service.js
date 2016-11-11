@@ -14,8 +14,11 @@ require('rxjs/add/operator/toPromise');
 //requires
 var firebase = require('firebase/app');
 require('firebase/database');
+require('firebase/auth');
 var GameService = (function () {
     function GameService() {
+        //will be passed in somehow from dashboard
+        this._gameId = "game_1234";
         var config = {
             apiKey: "AIzaSyBWteIXPmEyjcpELIukCD7ZVaE5coXoMYI",
             authDomain: "uno-card-game-7dbd0.firebaseapp.com",
@@ -24,10 +27,25 @@ var GameService = (function () {
             messagingSenderId: "566146632667"
         };
         firebase.initializeApp(config);
-        firebase.database().ref("user").once('value').then(function (snapshot) {
+    }
+    GameService.prototype.auth = function () {
+        var _this = this;
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                _this._uid = user.uid;
+                _this.getGame();
+            }
+            else {
+                var provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithRedirect(provider);
+            }
+        });
+    };
+    GameService.prototype.getGame = function () {
+        firebase.database().ref(this._gameId + "/players/" + this._uid).once('value').then(function (snapshot) {
             console.log(snapshot.val());
         });
-    }
+    };
     GameService = __decorate([
         core_1.Injectable(), 
         __metadata('design:paramtypes', [])

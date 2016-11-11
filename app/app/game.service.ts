@@ -6,9 +6,16 @@ import 'rxjs/add/operator/toPromise';
 //requires
 var firebase = require('firebase/app');
 require('firebase/database');
+require('firebase/auth');
 
 @Injectable()
 export class GameService {
+
+    //will be passed in somehow from dashboard
+    private _gameId: string = "game_1234";
+
+    private _uid: string;
+
     constructor() {
         var config = {
             apiKey: "AIzaSyBWteIXPmEyjcpELIukCD7ZVaE5coXoMYI",
@@ -18,8 +25,23 @@ export class GameService {
             messagingSenderId: "566146632667"
         };
         firebase.initializeApp(config);
+    }
 
-        firebase.database().ref("user").once('value').then(function (snapshot) {
+    auth(): void {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this._uid = user.uid;
+                this.getGame();
+            }
+            else {
+                var provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithRedirect(provider);
+            }
+        });
+    }
+
+    private getGame(): void {
+        firebase.database().ref(this._gameId + "/players/" + this._uid).once('value').then(function (snapshot) {
             console.log(snapshot.val());
         })
     }

@@ -9,15 +9,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require('@angular/core');
+var game_service_1 = require('../app/game.service');
 var GameComponent = (function () {
-    function GameComponent() {
+    function GameComponent(gameService) {
+        this.gameService = gameService;
     }
+    GameComponent.prototype.ngOnInit = function () {
+        this.gameService.auth();
+    };
     GameComponent = __decorate([
         core_1.Component({
             selector: 'game',
             template: '<h1>Game</h1>'
         }), 
-        __metadata('design:paramtypes', [])
+        __metadata('design:paramtypes', [game_service_1.GameService])
     ], GameComponent);
     return GameComponent;
 }());
