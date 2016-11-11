@@ -1,48 +1,44 @@
 //imports
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
+import { FirebaseService } from '../app/firebase.service'
+import { GameState } from '../app/game-state.model'
 import 'rxjs/add/operator/toPromise';
 
-//requires
-var firebase = require('firebase/app');
-require('firebase/database');
-require('firebase/auth');
 
 @Injectable()
 export class GameService {
 
-    //will be passed in somehow from dashboard
-    private _gameId: string = "game_1234";
+    private _gameState: GameState;
 
-    private _uid: string;
+    constructor(private _firebaseService: FirebaseService) {
 
-    constructor() {
-        var config = {
-            apiKey: "AIzaSyBWteIXPmEyjcpELIukCD7ZVaE5coXoMYI",
-            authDomain: "uno-card-game-7dbd0.firebaseapp.com",
-            databaseURL: "https://uno-card-game-7dbd0.firebaseio.com",
-            storageBucket: "uno-card-game-7dbd0.appspot.com",
-            messagingSenderId: "566146632667"
-        };
-        firebase.initializeApp(config);
     }
 
-    auth(): void {
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                this._uid = user.uid;
-                this.getGame();
-            }
-            else {
-                var provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithRedirect(provider);
+    init(): void {
+        this._firebaseService.auth();
+        this._firebaseService.authenticated.subscribe((auth: boolean) => {
+            if (auth) {
+                this.initGameService();
             }
         });
     }
 
-    private getGame(): void {
-        firebase.database().ref(this._gameId + "/players/" + this._uid).once('value').then(function (snapshot) {
-            console.log(snapshot.val());
+    private initGameService(): void {
+        this._firebaseService.init();
+        this._firebaseService.currentPlayer.subscribe((uid: string) => {
+            if(Number(uid) < 0)return; // ignore first subscribe update        
+            this.getGameState();
+
         })
     }
+
+    private getGameState(): void {
+        this._firebaseService.getGameState().then((response:GameState) => {            
+            console.log(response)
+        });
+    }
+    
+
+
 }

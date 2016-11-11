@@ -13,6 +13,7 @@ var platform_browser_1 = require('@angular/platform-browser');
 var app_component_1 = require('./app.component');
 var game_component_1 = require('./game.component');
 var game_service_1 = require('./game.service');
+var firebase_service_1 = require('./firebase.service');
 var AppModule = (function () {
     function AppModule() {
     }
@@ -21,7 +22,7 @@ var AppModule = (function () {
             imports: [platform_browser_1.BrowserModule],
             declarations: [app_component_1.AppComponent, game_component_1.GameComponent],
             bootstrap: [app_component_1.AppComponent],
-            providers: [game_service_1.GameService]
+            providers: [game_service_1.GameService, firebase_service_1.FirebaseService]
         }), 
         __metadata('design:paramtypes', [])
     ], AppModule);

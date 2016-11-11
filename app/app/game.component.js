@@ -15,12 +15,12 @@ var GameComponent = (function () {
         this.gameService = gameService;
     }
     GameComponent.prototype.ngOnInit = function () {
-        this.gameService.auth();
+        //this.gameService.auth();
     };
     GameComponent = __decorate([
         core_1.Component({
             selector: 'game',
-            template: '<h1>Game</h1>'
+            template: '<h1></h1>'
         }), 
         __metadata('design:paramtypes', [game_service_1.GameService])
     ], GameComponent);

@@ -11,9 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var game_service_1 = require('./game.service');
 var AppComponent = (function () {
-    function AppComponent(gs) {
-        this.gs = gs;
+    function AppComponent(_gameService) {
+        this._gameService = _gameService;
     }
+    AppComponent.prototype.ngOnInit = function () {
+        this._gameService.init();
+    };
     AppComponent = __decorate([
         core_1.Component({
             selector: 'my-app',

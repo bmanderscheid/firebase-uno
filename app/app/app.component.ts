@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { GameService } from './game.service';
 
 
@@ -7,8 +7,12 @@ import { GameService } from './game.service';
   selector: 'my-app',
   template: '<h1>My First Angular App</h1><game></game>'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
-  constructor(private gs: GameService) { }
+  constructor(private _gameService: GameService) { }
+
+  ngOnInit(){
+    this._gameService.init();
+  }
 
 }
