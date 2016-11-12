@@ -6,6 +6,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
 import { GameState } from '../app/game-state.model'
+import { CardModel } from '../app/card.model';
 
 //requires
 var firebase = require('firebase/app');
@@ -77,11 +78,11 @@ export class FirebaseService {
     getHand():Promise<GameState>{
         return firebase.database().ref(this._gameId + "/players/" + this._uid)
             .once('value')
-            .then(snapshot => this.getPublic(snapshot.val().hand))
+            .then(snapshot => this.getPublic(snapshot.val().hand as CardModel[]))                        
     }
     
-    getPublic(hand: any[]): Promise<GameState> {
-        this._newGameState.hand = hand;
+    getPublic(hand: CardModel[]): Promise<GameState> {
+        this._newGameState.hand = hand;        
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
             .then(snapshot => this.completeGameState(snapshot.val().players))

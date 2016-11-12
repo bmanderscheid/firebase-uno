@@ -12,9 +12,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var firebase_service_1 = require('../app/firebase.service');
 require('rxjs/add/operator/toPromise');
+var BehaviorSubject_1 = require('rxjs/BehaviorSubject');
 var GameService = (function () {
     function GameService(_firebaseService) {
         this._firebaseService = _firebaseService;
+        this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(null);
+        this._gameState = this._gameStateSource.asObservable();
     }
     GameService.prototype.init = function () {
         var _this = this;
@@ -35,10 +38,18 @@ var GameService = (function () {
         });
     };
     GameService.prototype.getGameState = function () {
+        var _this = this;
         this._firebaseService.getGameState().then(function (response) {
-            console.log(response);
+            _this._gameStateSource.next(response);
         });
     };
+    Object.defineProperty(GameService.prototype, "gameState", {
+        get: function () {
+            return this._gameState;
+        },
+        enumerable: true,
+        configurable: true
+    });
     GameService = __decorate([
         core_1.Injectable(), 
         __metadata('design:paramtypes', [firebase_service_1.FirebaseService])

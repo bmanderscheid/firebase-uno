@@ -284,18 +284,6 @@
           "value": 5,
           "color": "yellow",
           "rendered": false
-        },
-        {
-          "id": "r5",
-          "value": 5,
-          "color": "red",
-          "rendered": false
-        },
-        {
-          "id": "r2",
-          "value": 2,
-          "color": "red",
-          "rendered": false
         }
       ]
     }

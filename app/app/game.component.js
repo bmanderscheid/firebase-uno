@@ -10,17 +10,112 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var core_1 = require('@angular/core');
 var game_service_1 = require('../app/game.service');
+var card_sprite_1 = require('../app/card.sprite');
 var GameComponent = (function () {
-    function GameComponent(gameService) {
-        this.gameService = gameService;
+    function GameComponent(_gameService) {
+        this._gameService = _gameService;
+        this._firstGameStateUpdate = true;
     }
     GameComponent.prototype.ngOnInit = function () {
-        //this.gameService.auth();
+        this.preparePIXI();
+        this.loadAssets();
+    };
+    GameComponent.prototype.preparePIXI = function () {
+        this._renderer = PIXI.autoDetectRenderer(1024, 768, { backgroundColor: 0x1099bb });
+        document.getElementById("stage").appendChild(this._renderer.view);
+        this._stage = new PIXI.Container();
+    };
+    GameComponent.prototype.loadAssets = function () {
+        var _this = this;
+        this._loader = new PIXI.loaders.Loader('assets/');
+        this._loader.add('cards.json');
+        this._loader.load(function () { return _this.assetsLoaded(); });
+    };
+    GameComponent.prototype.assetsLoaded = function () {
+        this.render();
+        this.initGame();
+    };
+    GameComponent.prototype.initGame = function () {
+        var _this = this;
+        this._playerCards = [];
+        this._gameService.init();
+        this._gameService.gameState.subscribe(function (gameState) {
+            if (!gameState)
+                return;
+            _this._currentGameState = gameState;
+            _this.updateGame();
+            _this.renderGame();
+            _this._firstGameStateUpdate = false; // set to false so rendered property is honored      
+        });
+    };
+    /*
+      GAME UPDTATE
+    */
+    GameComponent.prototype.updateGame = function () {
+        // update realms    
+        this._playerHand = this._currentGameState.hand;
+        this.updatePlayerCards();
+        this._playerCards.sort(function (a, b) {
+            if (a.cardModel.id < b.cardModel.id)
+                return -1;
+            if (a.cardModel.id > b.cardModel.id)
+                return 1;
+            return 0;
+        });
+    };
+    GameComponent.prototype.updatePlayerCards = function () {
+        for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
+            var cardModel = _a[_i];
+            if (this._firstGameStateUpdate) {
+                this.spawnCard(cardModel);
+            }
+            else {
+                if (!cardModel.rendered) {
+                    this.spawnCard(cardModel);
+                }
+            }
+        }
+    };
+    GameComponent.prototype.spawnCard = function (cardModel) {
+        var card = new card_sprite_1.CardSprite(cardModel);
+        card.render();
+        card.anchor.set(.5, .5);
+        card.position.set(100, 50);
+        this._playerCards.push(card);
+    };
+    /*
+      GAME RENDER
+    */
+    GameComponent.prototype.renderGame = function () {
+        this.renderPlayerCards();
+    };
+    GameComponent.prototype.renderPlayerCards = function () {
+        var stageCenter = 512;
+        var widthOfHand = this._playerCards.length * this._playerCards[0].width;
+        var xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
+        for (var _i = 0, _a = this._playerCards; _i < _a.length; _i++) {
+            var sprite = _a[_i];
+            this._stage.addChild(sprite);
+            TweenLite.to(sprite, .5, {
+                onUpdate: this.render,
+                onUpdateScope: this,
+                x: xPos,
+                y: 300,
+                rotation: 360 * (Math.PI / 180)
+            });
+            xPos += sprite.width;
+        }
+        this.render();
+    };
+    GameComponent.prototype.render = function () {
+        if (!this._renderer)
+            return;
+        this._renderer.render(this._stage);
     };
     GameComponent = __decorate([
         core_1.Component({
             selector: 'game',
-            template: '<h1></h1>'
+            template: '<div id="stage"></div>'
         }), 
         __metadata('design:paramtypes', [game_service_1.GameService])
     ], GameComponent);

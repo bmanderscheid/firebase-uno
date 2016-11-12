@@ -1,5 +1,7 @@
+import { CardModel } from '../app/card.model';
+
 export class GameState{
-    hand:any[];
+    hand:CardModel[];
     players:Object;
     discard:any[];
 }

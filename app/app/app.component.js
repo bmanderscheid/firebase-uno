@@ -15,12 +15,11 @@ var AppComponent = (function () {
         this._gameService = _gameService;
     }
     AppComponent.prototype.ngOnInit = function () {
-        this._gameService.init();
     };
     AppComponent = __decorate([
         core_1.Component({
             selector: 'my-app',
-            template: '<h1>My First Angular App</h1><game></game>'
+            template: '<game></game>'
         }), 
         __metadata('design:paramtypes', [game_service_1.GameService])
     ], AppComponent);
