@@ -79,10 +79,13 @@ var GameComponent = (function () {
         }
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
+        var _this = this;
         var card = new card_sprite_1.CardSprite(cardModel);
         card.render();
+        card.interactive = true;
         card.anchor.set(.5, .5);
         card.position.set(100, 50);
+        card.on("mousedown", function (e) { return _this.playCard(e.target); });
         this._playerCards.push(card);
     };
     /*
@@ -119,9 +122,14 @@ var GameComponent = (function () {
             this.enableMoves();
     };
     GameComponent.prototype.enableMoves = function () {
-        var _this = this;
-        this._stage.interactive = true;
-        this._stage.on("mousedown", function (e) { return _this.drawCard(); });
+    };
+    GameComponent.prototype.playCard = function (card) {
+        console.log(card);
+        TweenLite.to(card, 1, {
+            x: 0, y: 0,
+            onUpdate: this.render,
+            onUpdateScope: this
+        });
     };
     GameComponent.prototype.drawCard = function () {
         this._gameService.drawCard();

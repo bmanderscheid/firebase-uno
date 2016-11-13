@@ -50,8 +50,12 @@ export class GameService {
         GAME ACTIONS
     */
 
+    playCard():void{
+        
+    }
+
     drawCard(): void {
-        this._firebaseService.drawCardForCurrentUser();
+        
     }
 
     //GET SET

@@ -17,7 +17,7 @@ require('firebase/auth');
 export class FirebaseService {
 
     //will be passed in somehow from dashboard
-    private _gameId: string = "games/game_1234";
+    private _gameId: string = "game_123";
     private _uid: string;
 
     private _authenticated: Observable<boolean>;
@@ -94,7 +94,12 @@ export class FirebaseService {
         return this._newGameState;
     }
 
-    drawCardForCurrentUser(): void {        
+
+
+    /* 
+        DRAW CARD
+    */
+    drawCardForCurrentUser(): void {
         firebase.database().ref(this._gameId + "/deck")
             .limitToFirst(1)
             .once('value')
@@ -102,7 +107,7 @@ export class FirebaseService {
     }
 
     updatePlayerHand(snapshot) {
-        let updates:Object = {};
+        let updates: Object = {};
 
         firebase.database().ref(this._gameId + "/players/" + this._uid + "/hand/5")
             .update(snapshot.val()[0])

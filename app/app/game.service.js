@@ -47,8 +47,9 @@ var GameService = (function () {
     /*
         GAME ACTIONS
     */
+    GameService.prototype.playCard = function () {
+    };
     GameService.prototype.drawCard = function () {
-        this._firebaseService.drawCardForCurrentUser();
     };
     Object.defineProperty(GameService.prototype, "gameState", {
         //GET SET

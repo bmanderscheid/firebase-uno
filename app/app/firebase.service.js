@@ -20,7 +20,7 @@ require('firebase/auth');
 var FirebaseService = (function () {
     function FirebaseService() {
         //will be passed in somehow from dashboard
-        this._gameId = "games/game_1234";
+        this._gameId = "game_123";
         this._authenticatedSource = new BehaviorSubject_1.BehaviorSubject(false);
         this._authenticated = this._authenticatedSource.asObservable();
         this._currentPlayerSource = new BehaviorSubject_1.BehaviorSubject("-1");
@@ -78,6 +78,9 @@ var FirebaseService = (function () {
         this._newGameState.players = v;
         return this._newGameState;
     };
+    /*
+        DRAW CARD
+    */
     FirebaseService.prototype.drawCardForCurrentUser = function () {
         var _this = this;
         firebase.database().ref(this._gameId + "/deck")

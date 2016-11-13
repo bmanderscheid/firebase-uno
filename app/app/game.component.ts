@@ -94,8 +94,10 @@ export class GameComponent implements OnInit {
   private spawnCard(cardModel): void {
     let card: CardSprite = new CardSprite(cardModel);
     card.render();
+    card.interactive = true;
     card.anchor.set(.5, .5);
     card.position.set(100, 50);
+    card.on("mousedown", (e) => this.playCard(e.target));
     this._playerCards.push(card);
   }
 
@@ -136,11 +138,19 @@ export class GameComponent implements OnInit {
   }
 
   private enableMoves(): void {
-    this._stage.interactive = true;
-    this._stage.on("mousedown",(e)=>this.drawCard());
+
   }
 
-  private drawCard():void{
+  private playCard(card: CardSprite): void {
+    console.log(card);
+    TweenLite.to(card, 1, {
+      x: 0, y: 0,
+      onUpdate: this.render,
+      onUpdateScope: this
+    });
+  }
+
+  private drawCard(): void {
     this._gameService.drawCard();
   }
 
