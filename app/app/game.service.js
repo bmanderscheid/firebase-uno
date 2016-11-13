@@ -33,7 +33,8 @@ var GameService = (function () {
         this._firebaseService.init();
         this._firebaseService.currentPlayer.subscribe(function (uid) {
             if (Number(uid) < 0)
-                return; // ignore first subscribe update        
+                return; // ignore first subscribe update    
+            _this._currentPlayer = uid;
             _this.getGameState();
         });
     };
@@ -43,9 +44,30 @@ var GameService = (function () {
             _this._gameStateSource.next(response);
         });
     };
+    /*
+        GAME ACTIONS
+    */
+    GameService.prototype.drawCard = function () {
+        this._firebaseService.drawCardForCurrentUser();
+    };
     Object.defineProperty(GameService.prototype, "gameState", {
+        //GET SET
         get: function () {
             return this._gameState;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GameService.prototype, "currentPlayer", {
+        get: function () {
+            return this._currentPlayer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GameService.prototype, "isCurrentPlayer", {
+        get: function () {
+            return this._currentPlayer == this._firebaseService.uid;
         },
         enumerable: true,
         configurable: true

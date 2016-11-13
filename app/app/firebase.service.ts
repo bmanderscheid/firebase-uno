@@ -17,7 +17,7 @@ require('firebase/auth');
 export class FirebaseService {
 
     //will be passed in somehow from dashboard
-    private _gameId: string = "game_1234";
+    private _gameId: string = "games/game_1234";
     private _uid: string;
 
     private _authenticated: Observable<boolean>;
@@ -26,7 +26,7 @@ export class FirebaseService {
     private _currentPlayer: Observable<string>;
     private _currentPlayerSource: BehaviorSubject<string>;
 
-    private _newGameState:GameState;
+    private _newGameState: GameState;
 
 
     constructor() {
@@ -75,23 +75,41 @@ export class FirebaseService {
         return this.getHand();
     }
 
-    getHand():Promise<GameState>{
+    getHand(): Promise<GameState> {
+        console.log(this.uid);
         return firebase.database().ref(this._gameId + "/players/" + this._uid)
             .once('value')
-            .then(snapshot => this.getPublic(snapshot.val().hand as CardModel[]))                        
+            .then(snapshot => this.getPublic(snapshot.val().hand as CardModel[]))
     }
-    
+
     getPublic(hand: CardModel[]): Promise<GameState> {
-        this._newGameState.hand = hand;        
+        this._newGameState.hand = hand;
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
             .then(snapshot => this.completeGameState(snapshot.val().players))
     }
 
-    completeGameState(v:Object):GameState{
+    completeGameState(v: Object): GameState {
         this._newGameState.players = v;
         return this._newGameState;
     }
+
+    drawCardForCurrentUser(): void {        
+        firebase.database().ref(this._gameId + "/deck")
+            .limitToFirst(1)
+            .once('value')
+            .then(snapshot => this.updatePlayerHand(snapshot));
+    }
+
+    updatePlayerHand(snapshot) {
+        let updates:Object = {};
+
+        firebase.database().ref(this._gameId + "/players/" + this._uid + "/hand/5")
+            .update(snapshot.val()[0])
+            .then(snapshot => console.log("did it"));
+    }
+
+    //GET SET
 
     get authenticated(): Observable<boolean> {
         return this._authenticated;
@@ -99,5 +117,9 @@ export class FirebaseService {
 
     get currentPlayer(): Observable<string> {
         return this._currentPlayer;
+    }
+
+    get uid(): string {
+        return this._uid;
     }
 }

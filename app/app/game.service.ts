@@ -12,8 +12,10 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class GameService {
 
-    private _gameState:Observable<GameState>;
-    private _gameStateSource:BehaviorSubject<GameState>;
+    private _gameState: Observable<GameState>;
+    private _gameStateSource: BehaviorSubject<GameState>;
+
+    private _currentPlayer: string;
 
     constructor(private _firebaseService: FirebaseService) {
         this._gameStateSource = new BehaviorSubject<GameState>(null);
@@ -32,20 +34,38 @@ export class GameService {
     private initGameService(): void {
         this._firebaseService.init();
         this._firebaseService.currentPlayer.subscribe((uid: string) => {
-            if(Number(uid) < 0)return; // ignore first subscribe update        
+            if (Number(uid) < 0) return; // ignore first subscribe update    
+            this._currentPlayer = uid;
             this.getGameState();
         })
     }
 
     private getGameState(): void {
-        this._firebaseService.getGameState().then((response:GameState) => {            
+        this._firebaseService.getGameState().then((response: GameState) => {
             this._gameStateSource.next(response);
         });
     }
 
-    get gameState():Observable<GameState>{
-        return this._gameState;
-    }    
+    /*
+        GAME ACTIONS
+    */
 
+    drawCard(): void {
+        this._firebaseService.drawCardForCurrentUser();
+    }
+
+    //GET SET
+
+    get gameState(): Observable<GameState> {
+        return this._gameState;
+    }
+
+    get currentPlayer(): string {
+        return this._currentPlayer;
+    }
+
+    get isCurrentPlayer(): boolean {
+        return this._currentPlayer == this._firebaseService.uid;
+    }
 
 }

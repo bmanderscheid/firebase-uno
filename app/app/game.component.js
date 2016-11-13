@@ -14,6 +14,8 @@ var card_sprite_1 = require('../app/card.sprite');
 var GameComponent = (function () {
     function GameComponent(_gameService) {
         this._gameService = _gameService;
+        //move to config(s)
+        this.PLAYER_REALM_Y = 640;
         this._firstGameStateUpdate = true;
     }
     GameComponent.prototype.ngOnInit = function () {
@@ -90,6 +92,7 @@ var GameComponent = (function () {
         this.renderPlayerCards();
     };
     GameComponent.prototype.renderPlayerCards = function () {
+        var _this = this;
         var stageCenter = 512;
         var widthOfHand = this._playerCards.length * this._playerCards[0].width;
         var xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
@@ -100,12 +103,28 @@ var GameComponent = (function () {
                 onUpdate: this.render,
                 onUpdateScope: this,
                 x: xPos,
-                y: 300,
+                y: this.PLAYER_REALM_Y,
                 rotation: 360 * (Math.PI / 180)
             });
             xPos += sprite.width;
         }
-        this.render();
+        //temp - move later
+        TweenLite.delayedCall(.1, function () { return _this.evaluateGame(); });
+    };
+    /*
+        GAME EVALUATIONS AND ACTIONS
+    */
+    GameComponent.prototype.evaluateGame = function () {
+        if (this._gameService.isCurrentPlayer)
+            this.enableMoves();
+    };
+    GameComponent.prototype.enableMoves = function () {
+        var _this = this;
+        this._stage.interactive = true;
+        this._stage.on("mousedown", function (e) { return _this.drawCard(); });
+    };
+    GameComponent.prototype.drawCard = function () {
+        this._gameService.drawCard();
     };
     GameComponent.prototype.render = function () {
         if (!this._renderer)

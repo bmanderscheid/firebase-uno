@@ -14,6 +14,9 @@ export class GameComponent implements OnInit {
   private _renderer: PIXI.SystemRenderer;
   private _loader: PIXI.loaders.Loader;
 
+  //move to config(s)
+  private PLAYER_REALM_Y: number = 640;
+
   private _currentGameState: GameState;
   private _playerHand: CardModel[];
 
@@ -67,7 +70,7 @@ export class GameComponent implements OnInit {
   private updateGame(): void {
     // update realms    
     this._playerHand = this._currentGameState.hand;
-    this.updatePlayerCards();    
+    this.updatePlayerCards();
     this._playerCards.sort((a: CardSprite, b: CardSprite) => {
       if (a.cardModel.id < b.cardModel.id) return -1;
       if (a.cardModel.id > b.cardModel.id) return 1;
@@ -114,12 +117,31 @@ export class GameComponent implements OnInit {
         onUpdate: this.render,
         onUpdateScope: this,
         x: xPos,
-        y: 300,
+        y: this.PLAYER_REALM_Y,
         rotation: 360 * (Math.PI / 180)
       });
       xPos += sprite.width;
     }
-    this.render();
+
+    //temp - move later
+    TweenLite.delayedCall(.1, () => this.evaluateGame());
+  }
+
+  /*   
+      GAME EVALUATIONS AND ACTIONS    
+  */
+
+  private evaluateGame(): void {
+    if (this._gameService.isCurrentPlayer) this.enableMoves();
+  }
+
+  private enableMoves(): void {
+    this._stage.interactive = true;
+    this._stage.on("mousedown",(e)=>this.drawCard());
+  }
+
+  private drawCard():void{
+    this._gameService.drawCard();
   }
 
   private render(): void {

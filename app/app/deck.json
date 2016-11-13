@@ -1,0 +1,244 @@
+{
+    "deck": [
+        {
+            "id": "r0",
+            "color": "red",
+            "rendered": false,
+            "value": 0
+        },
+        {
+            "id": "r1",
+            "color": "red",
+            "rendered": false,
+            "value": 1
+        },
+        {
+            "id": "r2",
+            "color": "red",
+            "rendered": false,
+            "value": 2
+        },
+        {
+            "id": "r3",
+            "color": "red",
+            "rendered": false,
+            "value": 3
+        },
+        {
+            "id": "r4",
+            "color": "red",
+            "rendered": false,
+            "value": 4
+        },
+        {
+            "id": "r5",
+            "color": "red",
+            "rendered": false,
+            "value": 5
+        },
+        {
+            "id": "r6",
+            "color": "red",
+            "rendered": false,
+            "value": 6
+        },
+        {
+            "id": "r7",
+            "color": "red",
+            "rendered": false,
+            "value": 7
+        },
+        {
+            "id": "r8",
+            "color": "red",
+            "rendered": false,
+            "value": 8
+        },
+        {
+            "id": "r9",
+            "color": "red",
+            "rendered": false,
+            "value": 9
+        },
+        {
+            "id": "g0",
+            "color": "green",
+            "rendered": false,
+            "value": 0
+        },
+        {
+            "id": "g1",
+            "color": "green",
+            "rendered": false,
+            "value": 1
+        },
+        {
+            "id": "g2",
+            "color": "green",
+            "rendered": false,
+            "value": 2
+        },
+        {
+            "id": "g3",
+            "color": "green",
+            "rendered": false,
+            "value": 3
+        },
+        {
+            "id": "g4",
+            "color": "green",
+            "rendered": false,
+            "value": 4
+        },
+        {
+            "id": "g5",
+            "color": "green",
+            "rendered": false,
+            "value": 5
+        },
+        {
+            "id": "g6",
+            "color": "green",
+            "rendered": false,
+            "value": 6
+        },
+        {
+            "id": "g7",
+            "color": "green",
+            "rendered": false,
+            "value": 7
+        },
+        {
+            "id": "g8",
+            "color": "green",
+            "rendered": false,
+            "value": 8
+        },
+        {
+            "id": "g9",
+            "color": "green",
+            "rendered": false,
+            "value": 9
+        },
+        {
+            "id": "b0",
+            "color": "blue",
+            "rendered": false,
+            "value": 0
+        },
+        {
+            "id": "b1",
+            "color": "blue",
+            "rendered": false,
+            "value": 1
+        },
+        {
+            "id": "b2",
+            "color": "blue",
+            "rendered": false,
+            "value": 2
+        },
+        {
+            "id": "b3",
+            "color": "blue",
+            "rendered": false,
+            "value": 3
+        },
+        {
+            "id": "b4",
+            "color": "blue",
+            "rendered": false,
+            "value": 4
+        },
+        {
+            "id": "b5",
+            "color": "blue",
+            "rendered": false,
+            "value": 5
+        },
+        {
+            "id": "b6",
+            "color": "blue",
+            "rendered": false,
+            "value": 6
+        },
+        {
+            "id": "b7",
+            "color": "blue",
+            "rendered": false,
+            "value": 7
+        },
+        {
+            "id": "b8",
+            "color": "blue",
+            "rendered": false,
+            "value": 8
+        },
+        {
+            "id": "b9",
+            "color": "blue",
+            "rendered": false,
+            "value": 9
+        },
+        {
+            "id": "y0",
+            "color": "yellow",
+            "rendered": false,
+            "value": 0
+        },
+        {
+            "id": "y1",
+            "color": "yellow",
+            "rendered": false,
+            "value": 1
+        },
+        {
+            "id": "y2",
+            "color": "yellow",
+            "rendered": false,
+            "value": 2
+        },
+        {
+            "id": "y3",
+            "color": "yellow",
+            "rendered": false,
+            "value": 3
+        },
+        {
+            "id": "y4",
+            "color": "yellow",
+            "rendered": false,
+            "value": 4
+        },
+        {
+            "id": "y5",
+            "color": "yellow",
+            "rendered": false,
+            "value": 5
+        },
+        {
+            "id": "y6",
+            "color": "yellow",
+            "rendered": false,
+            "value": 6
+        },
+        {
+            "id": "y7",
+            "color": "yellow",
+            "rendered": false,
+            "value": 7
+        },
+        {
+            "id": "y8",
+            "color": "yellow",
+            "rendered": false,
+            "value": 8
+        },
+        {
+            "id": "y9",
+            "color": "yellow",
+            "rendered": false,
+            "value": 9
+        }
+    ]
+}
