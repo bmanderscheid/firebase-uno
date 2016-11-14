@@ -16,14 +16,19 @@ export class GameComponent implements OnInit {
 
   //move to config(s)
   private PLAYER_REALM_Y: number = 640;
+  private DECK_POS: any = { x: 512, y: 384 }
 
+  //game state
   private _currentGameState: GameState;
   private _playerHand: CardModel[];
+  private _cardModelInPlay: CardModel;
+
 
   private _firstGameStateUpdate: boolean; // render all cards on first load
 
   //sprites
   private _playerCards: CardSprite[];
+  private _cardInPlay: CardSprite;
 
   constructor(private _gameService: GameService) {
     this._firstGameStateUpdate = true;
@@ -68,7 +73,10 @@ export class GameComponent implements OnInit {
   */
 
   private updateGame(): void {
-    // update realms    
+    // card in playCard
+    this._cardModelInPlay = this._currentGameState.cardInPlay;
+
+    // player hand     
     this._playerHand = this._currentGameState.hand;
     this.updatePlayerCards();
     this._playerCards.sort((a: CardSprite, b: CardSprite) => {
@@ -81,24 +89,26 @@ export class GameComponent implements OnInit {
   private updatePlayerCards(): void {
     for (let cardModel of this._playerHand) {
       if (this._firstGameStateUpdate) {
-        this.spawnCard(cardModel);
+        let card: CardSprite = this.spawnCard(cardModel);
+        card.on("mousedown", (e) => this.playCard(e.target));
+        this._playerCards.push(card);
       }
-      else {
+      else
         if (!cardModel.rendered) {
-          this.spawnCard(cardModel);
+          let card: CardSprite = this.spawnCard(cardModel);
+          card.on("mousedown", (e) => this.playCard(e.target));
+          this._playerCards.push(card);
         }
-      }
     }
   }
 
-  private spawnCard(cardModel): void {
+  private spawnCard(cardModel): CardSprite {
     let card: CardSprite = new CardSprite(cardModel);
     card.render();
     card.interactive = true;
     card.anchor.set(.5, .5);
     card.position.set(100, 50);
-    card.on("mousedown", (e) => this.playCard(e.target));
-    this._playerCards.push(card);
+    return card;
   }
 
   /*   
@@ -106,7 +116,14 @@ export class GameComponent implements OnInit {
   */
 
   private renderGame(): void {
+    this.renderCardInPlay();
     this.renderPlayerCards();
+  }
+
+  private renderCardInPlay(): void {
+    this._cardInPlay = this.spawnCard(this._cardModelInPlay);
+    this._cardInPlay.position.set(this.DECK_POS.x, this.DECK_POS.y);
+    this._stage.addChild(this._cardInPlay);
   }
 
   private renderPlayerCards(): void {
@@ -142,12 +159,24 @@ export class GameComponent implements OnInit {
   }
 
   private playCard(card: CardSprite): void {
-    console.log(card);
-    TweenLite.to(card, 1, {
-      x: 0, y: 0,
+    TweenLite.to(card, .4, {
+      x: this.DECK_POS.x, y: this.DECK_POS.y,
       onUpdate: this.render,
-      onUpdateScope: this
+      onUpdateScope: this,
+      onComplete: this.evaluatePlayedCard,
+      onCompleteScope: this,
+      onCompleteParams: [card]
     });
+  }
+
+  private evaluatePlayedCard(card: CardSprite): void {
+    if (card.cardModel.value == this._cardInPlay.cardModel.value
+      || card.cardModel.color == this._cardInPlay.cardModel.color) {
+        console.log("upate firebase now and stop controls");
+    }
+    else {
+      this.renderPlayerCards();
+    }
   }
 
   private drawCard(): void {

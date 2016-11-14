@@ -72,10 +72,11 @@ var FirebaseService = (function () {
         this._newGameState.hand = hand;
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
-            .then(function (snapshot) { return _this.completeGameState(snapshot.val().players); });
+            .then(function (snapshot) { return _this.completeGameState(snapshot.val()); });
     };
-    FirebaseService.prototype.completeGameState = function (v) {
-        this._newGameState.players = v;
+    FirebaseService.prototype.completeGameState = function (data) {
+        this._newGameState.cardInPlay = data.cardInPlay;
+        this._newGameState.players = data.players;
         return this._newGameState;
     };
     /*

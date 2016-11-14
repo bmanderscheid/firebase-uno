@@ -9,12 +9,6 @@
                 "value": 4
             },
             {
-                "id": "g6",
-                "color": "green",
-                "rendered": false,
-                "value": 6
-            },
-            {
                 "id": "b0",
                 "color": "blue",
                 "rendered": false,
@@ -250,19 +244,19 @@
                         "id": "b1",
                         "value": 1,
                         "color": "blue",
-                        "rendered": false
+                        "rendered": true
                     },
                     {
                         "id": "y0",
                         "value": 0,
                         "color": "yellow",
-                        "rendered": false
+                        "rendered": true
                     },
                     {
                         "id": "y6",
                         "value": 6,
                         "color": "yellow",
-                        "rendered": false
+                        "rendered": true
                     }
                 ]
             },
@@ -272,24 +266,30 @@
                         "id": "r0",
                         "value": 0,
                         "color": "red",
-                        "rendered": false
+                        "rendered": true
                     },
                     {
                         "id": "g8",
                         "value": 8,
                         "color": "green",
-                        "rendered": false
+                        "rendered": true
                     },
                     {
                         "id": "y5",
                         "value": 5,
                         "color": "yellow",
-                        "rendered": false
+                        "rendered": true
                     }
                 ]
             }
         },
         "public": {
+            "cardInPlay": {
+                "id": "g6",
+                "color": "green",
+                "rendered": false,
+                "value": 6
+            },
             "players": {
                 "xx6hHKns4lOs6M0FHHpRRLLRcv82": {
                     "cardsInHand": 3

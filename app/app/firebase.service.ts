@@ -86,15 +86,14 @@ export class FirebaseService {
         this._newGameState.hand = hand;
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
-            .then(snapshot => this.completeGameState(snapshot.val().players))
+            .then(snapshot => this.completeGameState(snapshot.val()))
     }
 
-    completeGameState(v: Object): GameState {
-        this._newGameState.players = v;
+    completeGameState(data: any): GameState {
+        this._newGameState.cardInPlay = data.cardInPlay;
+        this._newGameState.players = data.players;
         return this._newGameState;
     }
-
-
 
     /* 
         DRAW CARD

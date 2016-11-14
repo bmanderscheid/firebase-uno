@@ -16,6 +16,7 @@ var GameComponent = (function () {
         this._gameService = _gameService;
         //move to config(s)
         this.PLAYER_REALM_Y = 640;
+        this.DECK_POS = { x: 512, y: 384 };
         this._firstGameStateUpdate = true;
     }
     GameComponent.prototype.ngOnInit = function () {
@@ -54,7 +55,9 @@ var GameComponent = (function () {
       GAME UPDTATE
     */
     GameComponent.prototype.updateGame = function () {
-        // update realms    
+        // card in playCard
+        this._cardModelInPlay = this._currentGameState.cardInPlay;
+        // player hand     
         this._playerHand = this._currentGameState.hand;
         this.updatePlayerCards();
         this._playerCards.sort(function (a, b) {
@@ -66,33 +69,40 @@ var GameComponent = (function () {
         });
     };
     GameComponent.prototype.updatePlayerCards = function () {
+        var _this = this;
         for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
             var cardModel = _a[_i];
             if (this._firstGameStateUpdate) {
-                this.spawnCard(cardModel);
+                var card = this.spawnCard(cardModel);
+                card.on("mousedown", function (e) { return _this.playCard(e.target); });
+                this._playerCards.push(card);
             }
-            else {
-                if (!cardModel.rendered) {
-                    this.spawnCard(cardModel);
-                }
+            else if (!cardModel.rendered) {
+                var card = this.spawnCard(cardModel);
+                card.on("mousedown", function (e) { return _this.playCard(e.target); });
+                this._playerCards.push(card);
             }
         }
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
-        var _this = this;
         var card = new card_sprite_1.CardSprite(cardModel);
         card.render();
         card.interactive = true;
         card.anchor.set(.5, .5);
         card.position.set(100, 50);
-        card.on("mousedown", function (e) { return _this.playCard(e.target); });
-        this._playerCards.push(card);
+        return card;
     };
     /*
       GAME RENDER
     */
     GameComponent.prototype.renderGame = function () {
+        this.renderCardInPlay();
         this.renderPlayerCards();
+    };
+    GameComponent.prototype.renderCardInPlay = function () {
+        this._cardInPlay = this.spawnCard(this._cardModelInPlay);
+        this._cardInPlay.position.set(this.DECK_POS.x, this.DECK_POS.y);
+        this._stage.addChild(this._cardInPlay);
     };
     GameComponent.prototype.renderPlayerCards = function () {
         var _this = this;
@@ -124,12 +134,23 @@ var GameComponent = (function () {
     GameComponent.prototype.enableMoves = function () {
     };
     GameComponent.prototype.playCard = function (card) {
-        console.log(card);
-        TweenLite.to(card, 1, {
-            x: 0, y: 0,
+        TweenLite.to(card, .4, {
+            x: this.DECK_POS.x, y: this.DECK_POS.y,
             onUpdate: this.render,
-            onUpdateScope: this
+            onUpdateScope: this,
+            onComplete: this.evaluatePlayedCard,
+            onCompleteScope: this,
+            onCompleteParams: [card]
         });
+    };
+    GameComponent.prototype.evaluatePlayedCard = function (card) {
+        if (card.cardModel.value == this._cardInPlay.cardModel.value
+            || card.cardModel.color == this._cardInPlay.cardModel.color) {
+            console.log("upate firebase now and stop controls");
+        }
+        else {
+            this.renderPlayerCards();
+        }
     };
     GameComponent.prototype.drawCard = function () {
         this._gameService.drawCard();
