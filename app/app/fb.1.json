@@ -1,0 +1,349 @@
+{
+    "game_1234": {
+        "currentPlayer": "aaaa",
+        "deck": {
+            "g9": {
+                "id": "g9",
+                "color": "green",
+                "rendered": false,
+                "value": 9,
+                "deckOrder": 0
+            },
+            "b8": {
+                "id": "b8",
+                "color": "blue",
+                "rendered": false,
+                "value": 8,
+                "deckOrder": 1
+            },
+            "g2": {
+                "id": "g2",
+                "color": "green",
+                "rendered": false,
+                "value": 2,
+                "deckOrder": 2
+            },
+            "b1": {
+                "id": "b1",
+                "color": "blue",
+                "rendered": false,
+                "value": 1,
+                "deckOrder": 3
+            },
+            "r8": {
+                "id": "r8",
+                "color": "red",
+                "rendered": false,
+                "value": 8,
+                "deckOrder": 4
+            },
+            "r6": {
+                "id": "r6",
+                "color": "red",
+                "rendered": false,
+                "value": 6,
+                "deckOrder": 5
+            },
+            "g1": {
+                "id": "g1",
+                "color": "green",
+                "rendered": false,
+                "value": 1,
+                "deckOrder": 6
+            },
+            "g5": {
+                "id": "g5",
+                "color": "green",
+                "rendered": false,
+                "value": 5,
+                "deckOrder": 7
+            },
+            "b2": {
+                "id": "b2",
+                "color": "blue",
+                "rendered": false,
+                "value": 2,
+                "deckOrder": 8
+            },
+            "r1": {
+                "id": "r1",
+                "color": "red",
+                "rendered": false,
+                "value": 1,
+                "deckOrder": 9
+            },
+            "g8": {
+                "id": "g8",
+                "color": "green",
+                "rendered": false,
+                "value": 8,
+                "deckOrder": 10
+            },
+            "y2": {
+                "id": "y2",
+                "color": "yellow",
+                "rendered": false,
+                "value": 2,
+                "deckOrder": 11
+            },
+            "r2": {
+                "id": "r2",
+                "color": "red",
+                "rendered": false,
+                "value": 2,
+                "deckOrder": 12
+            },
+            "r4": {
+                "id": "r4",
+                "color": "red",
+                "rendered": false,
+                "value": 4,
+                "deckOrder": 13
+            },
+            "b6": {
+                "id": "b6",
+                "color": "blue",
+                "rendered": false,
+                "value": 6,
+                "deckOrder": 14
+            },
+            "y1": {
+                "id": "y1",
+                "color": "yellow",
+                "rendered": false,
+                "value": 1,
+                "deckOrder": 15
+            },
+            "y6": {
+                "id": "y6",
+                "color": "yellow",
+                "rendered": false,
+                "value": 6,
+                "deckOrder": 16
+            },
+            "r3": {
+                "id": "r3",
+                "color": "red",
+                "rendered": false,
+                "value": 3,
+                "deckOrder": 17
+            },
+            "y3": {
+                "id": "y3",
+                "color": "yellow",
+                "rendered": false,
+                "value": 3,
+                "deckOrder": 18
+            },
+            "g7": {
+                "id": "g7",
+                "color": "green",
+                "rendered": false,
+                "value": 7,
+                "deckOrder": 19
+            },
+            "y7": {
+                "id": "y7",
+                "color": "yellow",
+                "rendered": false,
+                "value": 7,
+                "deckOrder": 20
+            },
+            "g3": {
+                "id": "g3",
+                "color": "green",
+                "rendered": false,
+                "value": 3,
+                "deckOrder": 21
+            },
+            "y5": {
+                "id": "y5",
+                "color": "yellow",
+                "rendered": false,
+                "value": 5,
+                "deckOrder": 22
+            },
+            "g4": {
+                "id": "g4",
+                "color": "green",
+                "rendered": false,
+                "value": 4,
+                "deckOrder": 23
+            },
+            "y4": {
+                "id": "y4",
+                "color": "yellow",
+                "rendered": false,
+                "value": 4,
+                "deckOrder": 24
+            },
+            "b4": {
+                "id": "b4",
+                "color": "blue",
+                "rendered": false,
+                "value": 4,
+                "deckOrder": 25
+            },
+            "g0": {
+                "id": "g0",
+                "color": "green",
+                "rendered": false,
+                "value": 0,
+                "deckOrder": 26
+            },
+            "y0": {
+                "id": "y0",
+                "color": "yellow",
+                "rendered": false,
+                "value": 0,
+                "deckOrder": 27
+            },
+            "r9": {
+                "id": "r9",
+                "color": "red",
+                "rendered": false,
+                "value": 9,
+                "deckOrder": 28
+            },
+            "b5": {
+                "id": "b5",
+                "color": "blue",
+                "rendered": false,
+                "value": 5,
+                "deckOrder": 29
+            },
+            "b9": {
+                "id": "b9",
+                "color": "blue",
+                "rendered": false,
+                "value": 9,
+                "deckOrder": 30
+            },
+            "b3": {
+                "id": "b3",
+                "color": "blue",
+                "rendered": false,
+                "value": 3,
+                "deckOrder": 31
+            },
+            "r5": {
+                "id": "r5",
+                "color": "red",
+                "rendered": false,
+                "value": 5,
+                "deckOrder": 32
+            },
+            "r0": {
+                "id": "r0",
+                "color": "red",
+                "rendered": false,
+                "value": 0,
+                "deckOrder": 33
+            },
+            "r7": {
+                "id": "r7",
+                "color": "red",
+                "rendered": false,
+                "value": 7,
+                "deckOrder": 34
+            },
+            "y9": {
+                "id": "y9",
+                "color": "yellow",
+                "rendered": false,
+                "value": 9,
+                "deckOrder": 35
+            },
+            "y8": {
+                "id": "y8",
+                "color": "yellow",
+                "rendered": false,
+                "value": 8,
+                "deckOrder": 36
+            },
+            "b7": {
+                "id": "b7",
+                "color": "blue",
+                "rendered": false,
+                "value": 7,
+                "deckOrder": 37
+            },
+            "g6": {
+                "id": "g6",
+                "color": "green",
+                "rendered": false,
+                "value": 6,
+                "deckOrder": 38
+            },
+            "b0": {
+                "id": "b0",
+                "color": "blue",
+                "rendered": false,
+                "value": 0,
+                "deckOrder": 39
+            }
+        },
+        "players": {
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
+                "hand": [
+                    {
+                        "id": "r0",
+                        "value": 0,
+                        "color": "red",
+                        "rendered": true
+                    },
+                    {
+                        "id": "g8",
+                        "value": 8,
+                        "color": "green",
+                        "rendered": true
+                    },
+                    {
+                        "id": "y5",
+                        "value": 5,
+                        "color": "yellow",
+                        "rendered": true
+                    }
+                ]
+            },
+            "xx6hHKns4lOs6M0FHHpRRLLRcv82": {
+                "hand": [
+                    {
+                        "id": "r0",
+                        "value": 0,
+                        "color": "red",
+                        "rendered": true
+                    },
+                    {
+                        "id": "g8",
+                        "value": 8,
+                        "color": "green",
+                        "rendered": true
+                    },
+                    {
+                        "id": "y5",
+                        "value": 5,
+                        "color": "yellow",
+                        "rendered": true
+                    }
+                ]
+            }
+        }
+    },
+    "public": {
+        "cardInPlay": {
+            "id": "g6",
+            "color": "green",
+            "rendered": false,
+            "value": 6
+        },
+        "players": {
+            "xx6hHKns4lOs6M0FHHpRRLLRcv82": {
+                "cardsInHand": 3
+            },
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
+                "cardsInHand": 5
+            }
+        }
+    }
+}
