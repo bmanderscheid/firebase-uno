@@ -20,7 +20,7 @@ require('firebase/auth');
 var FirebaseService = (function () {
     function FirebaseService() {
         //will be passed in somehow from dashboard
-        this._gameId = "game_1234";
+        this._gameId = "game_123";
         this._authenticatedSource = new BehaviorSubject_1.BehaviorSubject(false);
         this._authenticated = this._authenticatedSource.asObservable();
         this._currentPlayerSource = new BehaviorSubject_1.BehaviorSubject("-1");
@@ -62,6 +62,7 @@ var FirebaseService = (function () {
     };
     FirebaseService.prototype.getHand = function () {
         var _this = this;
+        console.log(this.uid);
         return firebase.database().ref(this._gameId + "/players/" + this._uid)
             .once('value')
             .then(function (snapshot) { return _this.getPublic(snapshot.val().hand); });
@@ -71,13 +72,31 @@ var FirebaseService = (function () {
         this._newGameState.hand = hand;
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
-            .then(function (snapshot) { return _this.completeGameState(snapshot.val().players); });
+            .then(function (snapshot) { return _this.completeGameState(snapshot.val()); });
     };
-    FirebaseService.prototype.completeGameState = function (v) {
-        this._newGameState.players = v;
+    FirebaseService.prototype.completeGameState = function (data) {
+        this._newGameState.cardInPlay = data.cardInPlay;
+        this._newGameState.players = data.players;
         return this._newGameState;
     };
+    /*
+        DRAW CARD
+    */
+    FirebaseService.prototype.drawCardForCurrentUser = function () {
+        var _this = this;
+        firebase.database().ref(this._gameId + "/deck")
+            .limitToFirst(1)
+            .once('value')
+            .then(function (snapshot) { return _this.updatePlayerHand(snapshot); });
+    };
+    FirebaseService.prototype.updatePlayerHand = function (snapshot) {
+        var updates = {};
+        firebase.database().ref(this._gameId + "/players/" + this._uid + "/hand/5")
+            .update(snapshot.val()[0])
+            .then(function (snapshot) { return console.log("did it"); });
+    };
     Object.defineProperty(FirebaseService.prototype, "authenticated", {
+        //GET SET
         get: function () {
             return this._authenticated;
         },
@@ -87,6 +106,13 @@ var FirebaseService = (function () {
     Object.defineProperty(FirebaseService.prototype, "currentPlayer", {
         get: function () {
             return this._currentPlayer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirebaseService.prototype, "uid", {
+        get: function () {
+            return this._uid;
         },
         enumerable: true,
         configurable: true
