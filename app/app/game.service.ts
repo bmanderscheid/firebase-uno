@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { FirebaseService } from '../app/firebase.service'
 import { GameState } from '../app/game-state.model'
+import { CardModel } from '../app/card.model'
 
 import 'rxjs/add/operator/toPromise';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -14,8 +15,8 @@ export class GameService {
 
     private _gameState: Observable<GameState>;
     private _gameStateSource: BehaviorSubject<GameState>;
-
-    private _currentPlayer: string;
+    
+    private _currentPlayer:string;
 
     constructor(private _firebaseService: FirebaseService) {
         this._gameStateSource = new BehaviorSubject<GameState>(null);
@@ -33,9 +34,9 @@ export class GameService {
 
     private initGameService(): void {
         this._firebaseService.init();
-        this._firebaseService.currentPlayer.subscribe((uid: string) => {
-            if (Number(uid) < 0) return; // ignore first subscribe update    
-            this._currentPlayer = uid;
+        this._firebaseService.currentPlayer.subscribe((playerId: string) => {
+            if (Number(playerId) < 0) return; // ignore first subscribe update    
+            this._currentPlayer = playerId;
             this.getGameState();
         })
     }
@@ -43,6 +44,7 @@ export class GameService {
     private getGameState(): void {
         this._firebaseService.getGameState().then((response: GameState) => {
             this._gameStateSource.next(response);
+            console.log(this._gameState);
         });
     }
 
@@ -50,12 +52,25 @@ export class GameService {
         GAME ACTIONS
     */
 
-    playCard():void{
-        
+    playCard(cardInPlay: CardModel): void {        
+        let gameState: GameState = this._gameStateSource.value;                
+        let playerHand:CardModel[] = this.removeCardFromHand(cardInPlay, gameState.hand);
+        let newPlayerHand = playerHand.reduce((o, v, i) => {            
+            o[v.id] = v;
+            return o;
+        }, {});
+        this._firebaseService.playCard(cardInPlay,newPlayerHand);
     }
 
     drawCard(): void {
-        
+
+    }
+
+    /*
+        UTILITY
+    */
+    removeCardFromHand(card: CardModel, hand: CardModel[]): CardModel[] {
+        return hand.filter(c => c.id != card.id)
     }
 
     //GET SET
@@ -64,12 +79,8 @@ export class GameService {
         return this._gameState;
     }
 
-    get currentPlayer(): string {
-        return this._currentPlayer;
-    }
-
-    get isCurrentPlayer(): boolean {
-        return this._currentPlayer == this._firebaseService.uid;
+    get isCurrentPlayer(): boolean {        
+        return this._currentPlayer == this._firebaseService.playerId;
     }
 
 }

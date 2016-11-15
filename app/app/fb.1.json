@@ -1,70 +1,7 @@
 {
     "game_1234": {
-        "currentPlayer": "aaaa",
+        "currentPlayer": "lcSyk6JsAMcuDrnOIrX06vKA5MD3",
         "deck": {
-            "g9": {
-                "id": "g9",
-                "color": "green",
-                "rendered": false,
-                "value": 9,
-                "deckOrder": 0
-            },
-            "b8": {
-                "id": "b8",
-                "color": "blue",
-                "rendered": false,
-                "value": 8,
-                "deckOrder": 1
-            },
-            "g2": {
-                "id": "g2",
-                "color": "green",
-                "rendered": false,
-                "value": 2,
-                "deckOrder": 2
-            },
-            "b1": {
-                "id": "b1",
-                "color": "blue",
-                "rendered": false,
-                "value": 1,
-                "deckOrder": 3
-            },
-            "r8": {
-                "id": "r8",
-                "color": "red",
-                "rendered": false,
-                "value": 8,
-                "deckOrder": 4
-            },
-            "r6": {
-                "id": "r6",
-                "color": "red",
-                "rendered": false,
-                "value": 6,
-                "deckOrder": 5
-            },
-            "g1": {
-                "id": "g1",
-                "color": "green",
-                "rendered": false,
-                "value": 1,
-                "deckOrder": 6
-            },
-            "g5": {
-                "id": "g5",
-                "color": "green",
-                "rendered": false,
-                "value": 5,
-                "deckOrder": 7
-            },
-            "b2": {
-                "id": "b2",
-                "color": "blue",
-                "rendered": false,
-                "value": 2,
-                "deckOrder": 8
-            },
             "r1": {
                 "id": "r1",
                 "color": "red",
@@ -285,64 +222,91 @@
         },
         "players": {
             "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
-                "hand": [
-                    {
-                        "id": "r0",
-                        "value": 0,
-                        "color": "red",
-                        "rendered": true
-                    },
-                    {
-                        "id": "g8",
-                        "value": 8,
+                "hand": {
+                    "g9": {
+                        "id": "g9",
                         "color": "green",
-                        "rendered": true
+                        "rendered": true,
+                        "value": 9,
+                        "deckOrder": 0
                     },
-                    {
-                        "id": "y5",
-                        "value": 5,
-                        "color": "yellow",
-                        "rendered": true
+                    "b8": {
+                        "id": "b8",
+                        "color": "blue",
+                        "rendered": true,
+                        "value": 8,
+                        "deckOrder": 1
+                    },
+                    "g2": {
+                        "id": "g2",
+                        "color": "green",
+                        "rendered": true,
+                        "value": 2,
+                        "deckOrder": 2
+                    },
+                    "b1": {
+                        "id": "b1",
+                        "color": "blue",
+                        "rendered": true,
+                        "value": 1,
+                        "deckOrder": 3
                     }
-                ]
+                }
             },
-            "xx6hHKns4lOs6M0FHHpRRLLRcv82": {
-                "hand": [
-                    {
-                        "id": "r0",
-                        "value": 0,
+            "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
+                "hand": {
+                    "r8": {
+                        "id": "r8",
                         "color": "red",
-                        "rendered": true
-                    },
-                    {
-                        "id": "g8",
+                        "rendered": true,
                         "value": 8,
-                        "color": "green",
-                        "rendered": true
+                        "deckOrder": 4
                     },
-                    {
-                        "id": "y5",
+                    "r6": {
+                        "id": "r6",
+                        "color": "red",
+                        "rendered": true,
+                        "value": 6,
+                        "deckOrder": 5
+                    },
+                    "g1": {
+                        "id": "g1",
+                        "color": "green",
+                        "rendered": true,
+                        "value": 1,
+                        "deckOrder": 6
+                    },
+                    "g5": {
+                        "id": "g5",
+                        "color": "green",
+                        "rendered": true,
                         "value": 5,
-                        "color": "yellow",
-                        "rendered": true
+                        "deckOrder": 7
+                    },
+                    "b2": {
+                        "id": "b2",
+                        "color": "blue",
+                        "rendered": true,
+                        "value": 2,
+                        "deckOrder": 8
                     }
-                ]
+                }
             }
-        }
-    },
-    "public": {
-        "cardInPlay": {
-            "id": "g6",
-            "color": "green",
-            "rendered": false,
-            "value": 6
         },
-        "players": {
-            "xx6hHKns4lOs6M0FHHpRRLLRcv82": {
-                "cardsInHand": 3
+        "public": {
+            "cardInPlay": {
+                "id": "g6",
+                "color": "green",
+                "rendered": false,
+                "value": 6
             },
-            "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
-                "cardsInHand": 5
+            "players": {
+                "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
+                    "cardsInHand": 3
+                },
+                "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
+                    "cardsInHand": 5
+                }
             }
         }
     }

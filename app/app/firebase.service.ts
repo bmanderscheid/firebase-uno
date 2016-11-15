@@ -17,8 +17,8 @@ require('firebase/auth');
 export class FirebaseService {
 
     //will be passed in somehow from dashboard
-    private _gameId: string = "game_123";
-    private _uid: string;
+    private _gameId: string = "game_1234";
+    private _playerId: string;
 
     private _authenticated: Observable<boolean>;
     private _authenticatedSource: BehaviorSubject<boolean>;
@@ -52,7 +52,7 @@ export class FirebaseService {
     auth(): void {
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                this._uid = user.uid;
+                this._playerId = user.uid;
                 this._authenticatedSource.next(true);
             }
             else {
@@ -76,14 +76,14 @@ export class FirebaseService {
     }
 
     getHand(): Promise<GameState> {
-        console.log(this.uid);
-        return firebase.database().ref(this._gameId + "/players/" + this._uid)
+        return firebase.database().ref(this._gameId + "/players/" + this._playerId)
             .once('value')
             .then(snapshot => this.getPublic(snapshot.val().hand as CardModel[]))
     }
 
     getPublic(hand: CardModel[]): Promise<GameState> {
-        this._newGameState.hand = hand;
+        // convert to array -- do this here or in service?        
+        this._newGameState.hand = Object.keys(hand).map(key => hand[key]);
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
             .then(snapshot => this.completeGameState(snapshot.val()))
@@ -107,10 +107,23 @@ export class FirebaseService {
 
     updatePlayerHand(snapshot) {
         let updates: Object = {};
-
-        firebase.database().ref(this._gameId + "/players/" + this._uid + "/hand/5")
+        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand/5")
             .update(snapshot.val()[0])
             .then(snapshot => console.log("did it"));
+    }
+
+    /* 
+        PLAYS
+    */
+
+    playCard(cardInPlay: CardModel, playerHand: Object): void {
+        let update: Object = {};
+        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
+        update[this._gameId + "/public/cardInPlay"] = cardInPlay;
+        //// dev - make current player logic
+        update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref().update(update);
     }
 
     //GET SET
@@ -123,7 +136,7 @@ export class FirebaseService {
         return this._currentPlayer;
     }
 
-    get uid(): string {
-        return this._uid;
+    get playerId(): string {
+        return this._playerId;
     }
 }

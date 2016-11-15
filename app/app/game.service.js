@@ -31,10 +31,10 @@ var GameService = (function () {
     GameService.prototype.initGameService = function () {
         var _this = this;
         this._firebaseService.init();
-        this._firebaseService.currentPlayer.subscribe(function (uid) {
-            if (Number(uid) < 0)
+        this._firebaseService.currentPlayer.subscribe(function (playerId) {
+            if (Number(playerId) < 0)
                 return; // ignore first subscribe update    
-            _this._currentPlayer = uid;
+            _this._currentPlayer = playerId;
             _this.getGameState();
         });
     };
@@ -42,14 +42,28 @@ var GameService = (function () {
         var _this = this;
         this._firebaseService.getGameState().then(function (response) {
             _this._gameStateSource.next(response);
+            console.log(_this._gameState);
         });
     };
     /*
         GAME ACTIONS
     */
-    GameService.prototype.playCard = function () {
+    GameService.prototype.playCard = function (cardInPlay) {
+        var gameState = this._gameStateSource.value;
+        var playerHand = this.removeCardFromHand(cardInPlay, gameState.hand);
+        var newPlayerHand = playerHand.reduce(function (o, v, i) {
+            o[v.id] = v;
+            return o;
+        }, {});
+        this._firebaseService.playCard(cardInPlay, newPlayerHand);
     };
     GameService.prototype.drawCard = function () {
+    };
+    /*
+        UTILITY
+    */
+    GameService.prototype.removeCardFromHand = function (card, hand) {
+        return hand.filter(function (c) { return c.id != card.id; });
     };
     Object.defineProperty(GameService.prototype, "gameState", {
         //GET SET
@@ -59,16 +73,9 @@ var GameService = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(GameService.prototype, "currentPlayer", {
-        get: function () {
-            return this._currentPlayer;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(GameService.prototype, "isCurrentPlayer", {
         get: function () {
-            return this._currentPlayer == this._firebaseService.uid;
+            return this._currentPlayer == this._firebaseService.playerId;
         },
         enumerable: true,
         configurable: true

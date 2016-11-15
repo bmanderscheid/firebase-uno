@@ -134,6 +134,8 @@ var GameComponent = (function () {
     GameComponent.prototype.enableMoves = function () {
     };
     GameComponent.prototype.playCard = function (card) {
+        if (!this._gameService.isCurrentPlayer)
+            return;
         TweenLite.to(card, .4, {
             x: this.DECK_POS.x, y: this.DECK_POS.y,
             onUpdate: this.render,
@@ -146,7 +148,8 @@ var GameComponent = (function () {
     GameComponent.prototype.evaluatePlayedCard = function (card) {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
             || card.cardModel.color == this._cardInPlay.cardModel.color) {
-            console.log("upate firebase now and stop controls");
+            this.pullCardSpriteFromPlayerCards(card);
+            this._gameService.playCard(card.cardModel);
         }
         else {
             this.renderPlayerCards();
@@ -154,6 +157,12 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.drawCard = function () {
         this._gameService.drawCard();
+    };
+    /*
+      UTILITY
+    */
+    GameComponent.prototype.pullCardSpriteFromPlayerCards = function (card) {
+        this._playerCards = this._playerCards.filter(function (c) { return card.cardModel.id != c.cardModel.id; });
     };
     GameComponent.prototype.render = function () {
         if (!this._renderer)

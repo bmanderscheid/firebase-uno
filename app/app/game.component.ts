@@ -42,7 +42,7 @@ export class GameComponent implements OnInit {
   private preparePIXI(): void {
     this._renderer = PIXI.autoDetectRenderer(1024, 768, { backgroundColor: 0x1099bb });
     document.getElementById("stage").appendChild(this._renderer.view);
-    this._stage = new PIXI.Container();
+    this._stage = new PIXI.Container();    
   }
 
   private loadAssets(): void {
@@ -120,7 +120,7 @@ export class GameComponent implements OnInit {
     this.renderPlayerCards();
   }
 
-  private renderCardInPlay(): void {
+  private renderCardInPlay(): void {    
     this._cardInPlay = this.spawnCard(this._cardModelInPlay);
     this._cardInPlay.position.set(this.DECK_POS.x, this.DECK_POS.y);
     this._stage.addChild(this._cardInPlay);
@@ -159,6 +159,7 @@ export class GameComponent implements OnInit {
   }
 
   private playCard(card: CardSprite): void {
+    if(!this._gameService.isCurrentPlayer)return;
     TweenLite.to(card, .4, {
       x: this.DECK_POS.x, y: this.DECK_POS.y,
       onUpdate: this.render,
@@ -172,7 +173,8 @@ export class GameComponent implements OnInit {
   private evaluatePlayedCard(card: CardSprite): void {
     if (card.cardModel.value == this._cardInPlay.cardModel.value
       || card.cardModel.color == this._cardInPlay.cardModel.color) {
-        console.log("upate firebase now and stop controls");
+        this.pullCardSpriteFromPlayerCards(card);
+        this._gameService.playCard(card.cardModel);
     }
     else {
       this.renderPlayerCards();
@@ -181,6 +183,13 @@ export class GameComponent implements OnInit {
 
   private drawCard(): void {
     this._gameService.drawCard();
+  }
+
+  /*
+    UTILITY
+  */
+  private pullCardSpriteFromPlayerCards(card:CardSprite):void{
+    this._playerCards = this._playerCards.filter(c => card.cardModel.id != c.cardModel.id);
   }
 
   private render(): void {
