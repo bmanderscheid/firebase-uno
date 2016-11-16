@@ -88,17 +88,16 @@ export class GameComponent implements OnInit {
 
   private updatePlayerCards(): void {
     for (let cardModel of this._playerHand) {
-      if (this._firstGameStateUpdate) {
+      let spawnCard: boolean = false;
+      if (this._firstGameStateUpdate) spawnCard = true;
+      else
+        if (!cardModel.rendered) spawnCard = true;
+      if (spawnCard) {
         let card: CardSprite = this.spawnCard(cardModel);
         card.on("mousedown", (e) => this.playCard(e.target));
         this._playerCards.push(card);
+        spawnCard = false;
       }
-      else
-        if (!cardModel.rendered) {
-          let card: CardSprite = this.spawnCard(cardModel);
-          card.on("mousedown", (e) => this.playCard(e.target));
-          this._playerCards.push(card);
-        }
     }
   }
 
@@ -172,7 +171,7 @@ export class GameComponent implements OnInit {
   private evaluatePlayedCard(card: CardSprite): void {
     if (card.cardModel.value == this._cardInPlay.cardModel.value
       || card.cardModel.color == this._cardInPlay.cardModel.color) {
-        console.log("upate firebase now and stop controls");
+      console.log("upate firebase now and stop controls");
     }
     else {
       this.renderPlayerCards();

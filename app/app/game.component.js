@@ -72,15 +72,16 @@ var GameComponent = (function () {
         var _this = this;
         for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
             var cardModel = _a[_i];
-            if (this._firstGameStateUpdate) {
+            var spawnCard = false;
+            if (this._firstGameStateUpdate)
+                spawnCard = true;
+            else if (!cardModel.rendered)
+                spawnCard = true;
+            if (spawnCard) {
                 var card = this.spawnCard(cardModel);
                 card.on("mousedown", function (e) { return _this.playCard(e.target); });
                 this._playerCards.push(card);
-            }
-            else if (!cardModel.rendered) {
-                var card = this.spawnCard(cardModel);
-                card.on("mousedown", function (e) { return _this.playCard(e.target); });
-                this._playerCards.push(card);
+                spawnCard = false;
             }
         }
     };
