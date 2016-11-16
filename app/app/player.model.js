@@ -1,8 +1,8 @@
 "use strict";
-var Player = (function () {
-    function Player() {
+var PlayerModel = (function () {
+    function PlayerModel() {
     }
-    return Player;
+    return PlayerModel;
 }());
-exports.Player = Player;
+exports.PlayerModel = PlayerModel;
 //# sourceMappingURL=player.model.js.map

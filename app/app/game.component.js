@@ -16,6 +16,7 @@ var GameComponent = (function () {
         this._gameService = _gameService;
         //move to config(s)
         this.PLAYER_REALM_Y = 640;
+        this.OPPONENT_REALM_Y = 140;
         this.DECK_POS = { x: 512, y: 384 };
         this._firstGameStateUpdate = true;
     }
@@ -41,6 +42,7 @@ var GameComponent = (function () {
     GameComponent.prototype.initGame = function () {
         var _this = this;
         this._playerCards = [];
+        this._opponentCards = [];
         this._gameService.init();
         this._gameService.gameState.subscribe(function (gameState) {
             if (!gameState)
@@ -55,6 +57,7 @@ var GameComponent = (function () {
       GAME UPDTATE
     */
     GameComponent.prototype.updateGame = function () {
+        var _this = this;
         // card in playCard
         this._cardModelInPlay = this._currentGameState.cardInPlay;
         // player hand     
@@ -67,21 +70,38 @@ var GameComponent = (function () {
                 return 1;
             return 0;
         });
+        // opponent hand
+        // sloppy player management.  Wanting to move on so this will do for now
+        var opponent = this._currentGameState.players
+            .filter(function (player) { return player.uid != _this._gameService.playerId; })[0];
+        this._opponentNumCards = opponent.cardsInHand;
+        this.updateOpponentCards();
     };
     GameComponent.prototype.updatePlayerCards = function () {
         var _this = this;
         for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
             var cardModel = _a[_i];
-            if (this._firstGameStateUpdate) {
+            var spawnCard = false;
+            if (this._firstGameStateUpdate)
+                spawnCard = true;
+            else if (!cardModel.rendered)
+                spawnCard = true;
+            // spawn card
+            if (spawnCard) {
                 var card = this.spawnCard(cardModel);
                 card.on("mousedown", function (e) { return _this.playCard(e.target); });
                 this._playerCards.push(card);
+                spawnCard = false;
             }
-            else if (!cardModel.rendered) {
-                var card = this.spawnCard(cardModel);
-                card.on("mousedown", function (e) { return _this.playCard(e.target); });
-                this._playerCards.push(card);
-            }
+        }
+    };
+    GameComponent.prototype.updateOpponentCards = function () {
+        var cardsNeeded = this._opponentNumCards - this._opponentCards.length;
+        for (var i = 0; i < cardsNeeded; i++) {
+            var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+            card.anchor.set(.5, .5);
+            card.position.set(100, 50);
+            this._opponentCards.push(card);
         }
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
@@ -98,6 +118,7 @@ var GameComponent = (function () {
     GameComponent.prototype.renderGame = function () {
         this.renderCardInPlay();
         this.renderPlayerCards();
+        this.renderOpponentCards();
     };
     GameComponent.prototype.renderCardInPlay = function () {
         this._cardInPlay = this.spawnCard(this._cardModelInPlay);
@@ -105,7 +126,6 @@ var GameComponent = (function () {
         this._stage.addChild(this._cardInPlay);
     };
     GameComponent.prototype.renderPlayerCards = function () {
-        var _this = this;
         var stageCenter = 512;
         var widthOfHand = this._playerCards.length * this._playerCards[0].width;
         var xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
@@ -121,16 +141,28 @@ var GameComponent = (function () {
             });
             xPos += sprite.width;
         }
-        //temp - move later
-        TweenLite.delayedCall(.1, function () { return _this.evaluateGame(); });
+    };
+    // combine function with render player cards
+    GameComponent.prototype.renderOpponentCards = function () {
+        var stageCenter = 512;
+        var widthOfHand = this._opponentCards.length * this._opponentCards[0].width;
+        var xPos = stageCenter - (widthOfHand / 2) + (this._opponentCards[0].width / 2);
+        for (var _i = 0, _a = this._opponentCards; _i < _a.length; _i++) {
+            var sprite = _a[_i];
+            this._stage.addChild(sprite);
+            TweenLite.to(sprite, .5, {
+                onUpdate: this.render,
+                onUpdateScope: this,
+                x: xPos,
+                y: this.OPPONENT_REALM_Y,
+                rotation: 360 * (Math.PI / 180)
+            });
+            xPos += sprite.width;
+        }
     };
     /*
         GAME EVALUATIONS AND ACTIONS
     */
-    GameComponent.prototype.evaluateGame = function () {
-        if (this._gameService.isCurrentPlayer)
-            this.enableMoves();
-    };
     GameComponent.prototype.enableMoves = function () {
     };
     GameComponent.prototype.playCard = function (card) {

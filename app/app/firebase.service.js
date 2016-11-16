@@ -68,7 +68,7 @@ var FirebaseService = (function () {
     };
     FirebaseService.prototype.getPublic = function (hand) {
         var _this = this;
-        // convert to array -- do this here or in service?        
+        // convert to array -- do this here or in game service?        
         this._newGameState.hand = Object.keys(hand).map(function (key) { return hand[key]; });
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
@@ -76,7 +76,10 @@ var FirebaseService = (function () {
     };
     FirebaseService.prototype.completeGameState = function (data) {
         this._newGameState.cardInPlay = data.cardInPlay;
-        this._newGameState.players = data.players;
+        // convert to array -- do this here or in game service?        
+        this._newGameState.players = Object.keys(data.players)
+            .map(function (key) { return data.players[key]; });
+        console.log(this._newGameState);
         return this._newGameState;
     };
     /*

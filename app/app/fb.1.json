@@ -302,10 +302,14 @@
             },
             "players": {
                 "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
-                    "cardsInHand": 3
+                    "cardsInHand": 3,
+                    "uid":"JLNl39V9SZc1ri8FXe7bVCFbyBN2",
+                    "playTurn": 1
                 },
                 "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
-                    "cardsInHand": 5
+                    "cardsInHand": 5,
+                    "uid":"lcSyk6JsAMcuDrnOIrX06vKA5MD3",
+                    "playTurn": 0
                 }
             }
         }

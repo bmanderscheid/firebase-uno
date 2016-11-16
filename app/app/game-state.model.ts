@@ -1,7 +1,8 @@
 import { CardModel } from '../app/card.model';
+import { PlayerModel } from '../app/player.model';
 
 export class GameState {
     hand: CardModel[];
-    players: Object;
+    players: PlayerModel[];
     cardInPlay: CardModel;
 }

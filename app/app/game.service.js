@@ -41,8 +41,7 @@ var GameService = (function () {
     GameService.prototype.getGameState = function () {
         var _this = this;
         this._firebaseService.getGameState().then(function (response) {
-            _this._gameStateSource.next(response);
-            console.log(_this._gameState);
+            return _this._gameStateSource.next(response);
         });
     };
     /*
@@ -76,6 +75,13 @@ var GameService = (function () {
     Object.defineProperty(GameService.prototype, "isCurrentPlayer", {
         get: function () {
             return this._currentPlayer == this._firebaseService.playerId;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GameService.prototype, "playerId", {
+        get: function () {
+            return this._firebaseService.playerId;
         },
         enumerable: true,
         configurable: true

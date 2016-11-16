@@ -3,6 +3,7 @@ import { GameService } from '../app/game.service';
 import { GameState } from '../app/game-state.model'
 import { CardSprite } from '../app/card.sprite';
 import { CardModel } from '../app/card.model';
+import { PlayerModel } from '../app/player.model';
 
 @Component({
   selector: 'game',
@@ -16,18 +17,21 @@ export class GameComponent implements OnInit {
 
   //move to config(s)
   private PLAYER_REALM_Y: number = 640;
+  private OPPONENT_REALM_Y: number = 140;
   private DECK_POS: any = { x: 512, y: 384 }
 
   //game state
   private _currentGameState: GameState;
   private _playerHand: CardModel[];
   private _cardModelInPlay: CardModel;
-
+  private _opponentNumCards: number;
 
   private _firstGameStateUpdate: boolean; // render all cards on first load
 
   //sprites
   private _playerCards: CardSprite[];
+  private _opponentCards: PIXI.Sprite[];
+
   private _cardInPlay: CardSprite;
 
   constructor(private _gameService: GameService) {
@@ -42,7 +46,7 @@ export class GameComponent implements OnInit {
   private preparePIXI(): void {
     this._renderer = PIXI.autoDetectRenderer(1024, 768, { backgroundColor: 0x1099bb });
     document.getElementById("stage").appendChild(this._renderer.view);
-    this._stage = new PIXI.Container();    
+    this._stage = new PIXI.Container();
   }
 
   private loadAssets(): void {
@@ -58,6 +62,7 @@ export class GameComponent implements OnInit {
 
   private initGame(): void {
     this._playerCards = [];
+    this._opponentCards = [];
     this._gameService.init();
     this._gameService.gameState.subscribe((gameState: GameState) => {
       if (!gameState) return;
@@ -84,21 +89,40 @@ export class GameComponent implements OnInit {
       if (a.cardModel.id > b.cardModel.id) return 1;
       return 0;
     });
+
+    // opponent hand
+    // sloppy player management.  Wanting to move on so this will do for now
+
+    let opponent: PlayerModel = this._currentGameState.players
+      .filter(player => player.uid != this._gameService.playerId)[0];
+    this._opponentNumCards = opponent.cardsInHand;
+    this.updateOpponentCards();
+
   }
 
   private updatePlayerCards(): void {
     for (let cardModel of this._playerHand) {
-      if (this._firstGameStateUpdate) {
+      let spawnCard: boolean = false;
+      if (this._firstGameStateUpdate) spawnCard = true;
+      else
+        if (!cardModel.rendered) spawnCard = true;
+      // spawn card
+      if (spawnCard) {
         let card: CardSprite = this.spawnCard(cardModel);
         card.on("mousedown", (e) => this.playCard(e.target));
         this._playerCards.push(card);
+        spawnCard = false
       }
-      else
-        if (!cardModel.rendered) {
-          let card: CardSprite = this.spawnCard(cardModel);
-          card.on("mousedown", (e) => this.playCard(e.target));
-          this._playerCards.push(card);
-        }
+    }
+  }
+
+  private updateOpponentCards(): void {
+    let cardsNeeded: number = this._opponentNumCards - this._opponentCards.length;
+    for (let i = 0; i < cardsNeeded; i++) {
+      let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+      card.anchor.set(.5, .5);
+      card.position.set(100, 50);
+      this._opponentCards.push(card);
     }
   }
 
@@ -118,9 +142,10 @@ export class GameComponent implements OnInit {
   private renderGame(): void {
     this.renderCardInPlay();
     this.renderPlayerCards();
+    this.renderOpponentCards();
   }
 
-  private renderCardInPlay(): void {    
+  private renderCardInPlay(): void {
     this._cardInPlay = this.spawnCard(this._cardModelInPlay);
     this._cardInPlay.position.set(this.DECK_POS.x, this.DECK_POS.y);
     this._stage.addChild(this._cardInPlay);
@@ -141,25 +166,36 @@ export class GameComponent implements OnInit {
       });
       xPos += sprite.width;
     }
+  }
 
-    //temp - move later
-    TweenLite.delayedCall(.1, () => this.evaluateGame());
+  // combine function with render player cards
+  private renderOpponentCards(): void {
+    let stageCenter: number = 512;
+    let widthOfHand: number = this._opponentCards.length * this._opponentCards[0].width;
+    let xPos = stageCenter - (widthOfHand / 2) + (this._opponentCards[0].width / 2);
+    for (let sprite of this._opponentCards) {
+      this._stage.addChild(sprite);
+      TweenLite.to(sprite, .5, {
+        onUpdate: this.render,
+        onUpdateScope: this,
+        x: xPos,
+        y: this.OPPONENT_REALM_Y,
+        rotation: 360 * (Math.PI / 180)
+      });
+      xPos += sprite.width;
+    }
   }
 
   /*   
       GAME EVALUATIONS AND ACTIONS    
   */
 
-  private evaluateGame(): void {
-    if (this._gameService.isCurrentPlayer) this.enableMoves();
-  }
-
   private enableMoves(): void {
 
   }
 
   private playCard(card: CardSprite): void {
-    if(!this._gameService.isCurrentPlayer)return;
+    if (!this._gameService.isCurrentPlayer) return;
     TweenLite.to(card, .4, {
       x: this.DECK_POS.x, y: this.DECK_POS.y,
       onUpdate: this.render,
@@ -173,8 +209,8 @@ export class GameComponent implements OnInit {
   private evaluatePlayedCard(card: CardSprite): void {
     if (card.cardModel.value == this._cardInPlay.cardModel.value
       || card.cardModel.color == this._cardInPlay.cardModel.color) {
-        this.pullCardSpriteFromPlayerCards(card);
-        this._gameService.playCard(card.cardModel);
+      this.pullCardSpriteFromPlayerCards(card);
+      this._gameService.playCard(card.cardModel);
     }
     else {
       this.renderPlayerCards();
@@ -188,7 +224,7 @@ export class GameComponent implements OnInit {
   /*
     UTILITY
   */
-  private pullCardSpriteFromPlayerCards(card:CardSprite):void{
+  private pullCardSpriteFromPlayerCards(card: CardSprite): void {
     this._playerCards = this._playerCards.filter(c => card.cardModel.id != c.cardModel.id);
   }
 

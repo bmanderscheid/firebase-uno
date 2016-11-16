@@ -1,4 +1,4 @@
-export class Player {
+export class PlayerModel {
     uid: string;
     cardsInHand: number;
 }

@@ -15,8 +15,8 @@ export class GameService {
 
     private _gameState: Observable<GameState>;
     private _gameStateSource: BehaviorSubject<GameState>;
-    
-    private _currentPlayer:string;
+
+    private _currentPlayer: string;
 
     constructor(private _firebaseService: FirebaseService) {
         this._gameStateSource = new BehaviorSubject<GameState>(null);
@@ -42,24 +42,22 @@ export class GameService {
     }
 
     private getGameState(): void {
-        this._firebaseService.getGameState().then((response: GameState) => {
-            this._gameStateSource.next(response);
-            console.log(this._gameState);
-        });
+        this._firebaseService.getGameState().then((response: GameState) =>
+            this._gameStateSource.next(response));
     }
 
     /*
         GAME ACTIONS
     */
 
-    playCard(cardInPlay: CardModel): void {        
-        let gameState: GameState = this._gameStateSource.value;                
-        let playerHand:CardModel[] = this.removeCardFromHand(cardInPlay, gameState.hand);
-        let newPlayerHand = playerHand.reduce((o, v, i) => {            
+    playCard(cardInPlay: CardModel): void {
+        let gameState: GameState = this._gameStateSource.value;
+        let playerHand: CardModel[] = this.removeCardFromHand(cardInPlay, gameState.hand);
+        let newPlayerHand = playerHand.reduce((o, v, i) => {
             o[v.id] = v;
             return o;
         }, {});
-        this._firebaseService.playCard(cardInPlay,newPlayerHand);
+        this._firebaseService.playCard(cardInPlay, newPlayerHand);
     }
 
     drawCard(): void {
@@ -79,8 +77,12 @@ export class GameService {
         return this._gameState;
     }
 
-    get isCurrentPlayer(): boolean {        
+    get isCurrentPlayer(): boolean {
         return this._currentPlayer == this._firebaseService.playerId;
+    }
+
+    get playerId(): string {
+        return this._firebaseService.playerId;
     }
 
 }

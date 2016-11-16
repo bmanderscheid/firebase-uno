@@ -82,7 +82,7 @@ export class FirebaseService {
     }
 
     getPublic(hand: CardModel[]): Promise<GameState> {
-        // convert to array -- do this here or in service?        
+        // convert to array -- do this here or in game service?        
         this._newGameState.hand = Object.keys(hand).map(key => hand[key]);
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
@@ -91,7 +91,10 @@ export class FirebaseService {
 
     completeGameState(data: any): GameState {
         this._newGameState.cardInPlay = data.cardInPlay;
-        this._newGameState.players = data.players;
+        // convert to array -- do this here or in game service?        
+        this._newGameState.players = Object.keys(data.players)
+            .map(key => data.players[key]);
+            console.log(this._newGameState);
         return this._newGameState;
     }
 
