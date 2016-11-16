@@ -17,7 +17,8 @@ var GameComponent = (function () {
         //move to config(s)
         this.PLAYER_REALM_Y = 640;
         this.OPPONENT_REALM_Y = 140;
-        this.DECK_POS = { x: 512, y: 384 };
+        this.DISCARD_POS = { x: 600, y: 384 };
+        this.DECK_POS = { x: 450, y: 384 };
         this._firstGameStateUpdate = true;
     }
     GameComponent.prototype.ngOnInit = function () {
@@ -41,6 +42,7 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.initGame = function () {
         var _this = this;
+        this.drawUI();
         this._playerCards = [];
         this._opponentCards = [];
         this._gameService.init();
@@ -53,6 +55,15 @@ var GameComponent = (function () {
             _this._firstGameStateUpdate = false; // set to false so rendered property is honored      
         });
     };
+    GameComponent.prototype.drawUI = function () {
+        var _this = this;
+        this._deck = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+        this._deck.position.set(this.DECK_POS.x, this.DECK_POS.y);
+        this._deck.anchor.set(.5, .5);
+        this._deck.interactive = true;
+        this._deck.on("mousedown", function (e) { return _this.drawCard(); });
+        this._stage.addChild(this._deck);
+    };
     /*
       GAME UPDTATE
     */
@@ -60,6 +71,8 @@ var GameComponent = (function () {
         var _this = this;
         // card in playCard
         this._cardModelInPlay = this._currentGameState.cardInPlay;
+        this._cardInPlay = this.spawnCard(this._cardModelInPlay);
+        this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
         // player hand     
         this._playerHand = this._currentGameState.hand;
         this.updatePlayerCards();
@@ -96,13 +109,35 @@ var GameComponent = (function () {
         }
     };
     GameComponent.prototype.updateOpponentCards = function () {
-        var cardsNeeded = this._opponentNumCards - this._opponentCards.length;
-        for (var i = 0; i < cardsNeeded; i++) {
+        var cardsDifference = this._opponentNumCards - this._opponentCards.length;
+        if (this._firstGameStateUpdate)
+            this.updateOpponentAllOpponentCardsOnStart();
+        else if (cardsDifference < 0)
+            this.opponentCardPlay();
+        else if (cardsDifference > 0)
+            this.opponentDrawCard();
+    };
+    GameComponent.prototype.updateOpponentAllOpponentCardsOnStart = function () {
+        for (var i = 0; i < this._opponentNumCards; i++) {
             var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
             card.anchor.set(.5, .5);
             card.position.set(100, 50);
             this._opponentCards.push(card);
         }
+    };
+    GameComponent.prototype.opponentCardPlay = function () {
+        //this._opponentCards[0].texture = this._cardInPlay.texture;
+        var r = Math.floor(Math.random() * this._opponentCards.length);
+        var card = this._opponentCards[r];
+        this._cardInPlay.position.set(card.x, card.y);
+        this._stage.removeChild(card);
+        this._opponentCards.splice(r, 1);
+    };
+    GameComponent.prototype.opponentDrawCard = function () {
+        var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+        card.anchor.set(.5, .5);
+        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+        this._opponentCards.push(card);
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
         var card = new card_sprite_1.CardSprite(cardModel);
@@ -116,14 +151,13 @@ var GameComponent = (function () {
       GAME RENDER
     */
     GameComponent.prototype.renderGame = function () {
-        this.renderCardInPlay();
         this.renderPlayerCards();
         this.renderOpponentCards();
+        this.renderCardInPlay();
     };
     GameComponent.prototype.renderCardInPlay = function () {
-        this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-        this._cardInPlay.position.set(this.DECK_POS.x, this.DECK_POS.y);
         this._stage.addChild(this._cardInPlay);
+        TweenLite.to(this._cardInPlay, .5, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
     };
     GameComponent.prototype.renderPlayerCards = function () {
         var stageCenter = 512;
@@ -168,8 +202,10 @@ var GameComponent = (function () {
     GameComponent.prototype.playCard = function (card) {
         if (!this._gameService.isCurrentPlayer)
             return;
+        this._stage.removeChild(card);
+        this._stage.addChild(card);
         TweenLite.to(card, .4, {
-            x: this.DECK_POS.x, y: this.DECK_POS.y,
+            x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
             onUpdateScope: this,
             onComplete: this.evaluatePlayedCard,

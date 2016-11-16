@@ -87,16 +87,30 @@ var FirebaseService = (function () {
     */
     FirebaseService.prototype.drawCardForCurrentUser = function () {
         var _this = this;
+        console.log("drawing card....");
         firebase.database().ref(this._gameId + "/deck")
-            .limitToFirst(1)
             .once('value')
-            .then(function (snapshot) { return _this.updatePlayerHand(snapshot); });
+            .then(function (snapshot) { return _this.updatePlayerHand(snapshot.val()); });
     };
-    FirebaseService.prototype.updatePlayerHand = function (snapshot) {
+    FirebaseService.prototype.updatePlayerHand = function (deck) {
+        var _this = this;
+        var cards = Object.keys(deck).map(function (key) { return deck[key]; });
+        cards.sort(function (a, b) {
+            if (a.deckOrder < b.deckOrder)
+                return -1;
+            if (a.deckOrder > b.deckOrder)
+                return 1;
+            return 0;
+        });
+        var card = cards.pop();
+        card.rendered = false;
         var updates = {};
-        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand/5")
-            .update(snapshot.val()[0])
-            .then(function (snapshot) { return console.log("did it"); });
+        updates[this._gameId + "/deck/" + card.id] = null;
+        updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
+        updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
+        updates[this._gameId + "/currentPlayer"] = "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref()
+            .update(updates, function (snapshot) { return _this._currentPlayerSource.next(_this._playerId); });
     };
     /*
         PLAYS
@@ -105,6 +119,7 @@ var FirebaseService = (function () {
         var update = {};
         update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
         update[this._gameId + "/public/cardInPlay"] = cardInPlay;
+        update[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = Object.keys(playerHand).length;
         //// dev - make current player logic
         update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
             "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";

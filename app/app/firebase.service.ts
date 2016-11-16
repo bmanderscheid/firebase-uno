@@ -94,7 +94,7 @@ export class FirebaseService {
         // convert to array -- do this here or in game service?        
         this._newGameState.players = Object.keys(data.players)
             .map(key => data.players[key]);
-            console.log(this._newGameState);
+        console.log(this._newGameState);
         return this._newGameState;
     }
 
@@ -102,17 +102,28 @@ export class FirebaseService {
         DRAW CARD
     */
     drawCardForCurrentUser(): void {
+        console.log("drawing card....");
         firebase.database().ref(this._gameId + "/deck")
-            .limitToFirst(1)
             .once('value')
-            .then(snapshot => this.updatePlayerHand(snapshot));
+            .then(snapshot => this.updatePlayerHand(snapshot.val()));
     }
 
-    updatePlayerHand(snapshot) {
+    updatePlayerHand(deck): void {
+        let cards: Object[] = Object.keys(deck).map(key => deck[key]);
+        cards.sort((a: any, b: any) => {
+            if (a.deckOrder < b.deckOrder) return -1;
+            if (a.deckOrder > b.deckOrder) return 1;
+            return 0;
+        });
+        let card: any = cards.pop();
+        card.rendered = false;
         let updates: Object = {};
-        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand/5")
-            .update(snapshot.val()[0])
-            .then(snapshot => console.log("did it"));
+        updates[this._gameId + "/deck/" + card.id] = null;
+        updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
+        updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
+        updates[this._gameId + "/currentPlayer"] = "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref()
+            .update(updates, snapshot => this._currentPlayerSource.next(this._playerId));
     }
 
     /* 
@@ -123,6 +134,8 @@ export class FirebaseService {
         let update: Object = {};
         update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
         update[this._gameId + "/public/cardInPlay"] = cardInPlay;
+        update[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = Object.keys(playerHand).length;
+
         //// dev - make current player logic
         update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
             "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";

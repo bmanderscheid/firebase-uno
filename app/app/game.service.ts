@@ -35,6 +35,7 @@ export class GameService {
     private initGameService(): void {
         this._firebaseService.init();
         this._firebaseService.currentPlayer.subscribe((playerId: string) => {
+            console.log("player change");
             if (Number(playerId) < 0) return; // ignore first subscribe update    
             this._currentPlayer = playerId;
             this.getGameState();
@@ -61,7 +62,7 @@ export class GameService {
     }
 
     drawCard(): void {
-
+        this._firebaseService.drawCardForCurrentUser();
     }
 
     /*

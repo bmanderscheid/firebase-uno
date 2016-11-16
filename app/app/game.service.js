@@ -32,6 +32,7 @@ var GameService = (function () {
         var _this = this;
         this._firebaseService.init();
         this._firebaseService.currentPlayer.subscribe(function (playerId) {
+            console.log("player change");
             if (Number(playerId) < 0)
                 return; // ignore first subscribe update    
             _this._currentPlayer = playerId;
@@ -57,6 +58,7 @@ var GameService = (function () {
         this._firebaseService.playCard(cardInPlay, newPlayerHand);
     };
     GameService.prototype.drawCard = function () {
+        this._firebaseService.drawCardForCurrentUser();
     };
     /*
         UTILITY

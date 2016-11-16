@@ -18,7 +18,8 @@ export class GameComponent implements OnInit {
   //move to config(s)
   private PLAYER_REALM_Y: number = 640;
   private OPPONENT_REALM_Y: number = 140;
-  private DECK_POS: any = { x: 512, y: 384 }
+  private DISCARD_POS: any = { x: 600, y: 384 }
+  private DECK_POS: any = { x: 450, y: 384 }
 
   //game state
   private _currentGameState: GameState;
@@ -31,6 +32,7 @@ export class GameComponent implements OnInit {
   //sprites
   private _playerCards: CardSprite[];
   private _opponentCards: PIXI.Sprite[];
+  private _deck: PIXI.Sprite;
 
   private _cardInPlay: CardSprite;
 
@@ -61,6 +63,7 @@ export class GameComponent implements OnInit {
   }
 
   private initGame(): void {
+    this.drawUI();
     this._playerCards = [];
     this._opponentCards = [];
     this._gameService.init();
@@ -73,6 +76,15 @@ export class GameComponent implements OnInit {
     })
   }
 
+  private drawUI(): void {
+    this._deck = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+    this._deck.position.set(this.DECK_POS.x, this.DECK_POS.y);
+    this._deck.anchor.set(.5, .5);
+    this._deck.interactive = true;
+    this._deck.on("mousedown", (e) => this.drawCard());
+    this._stage.addChild(this._deck);
+  }
+
   /*
     GAME UPDTATE 
   */
@@ -80,6 +92,8 @@ export class GameComponent implements OnInit {
   private updateGame(): void {
     // card in playCard
     this._cardModelInPlay = this._currentGameState.cardInPlay;
+    this._cardInPlay = this.spawnCard(this._cardModelInPlay);
+    this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
 
     // player hand     
     this._playerHand = this._currentGameState.hand;
@@ -117,13 +131,36 @@ export class GameComponent implements OnInit {
   }
 
   private updateOpponentCards(): void {
-    let cardsNeeded: number = this._opponentNumCards - this._opponentCards.length;
-    for (let i = 0; i < cardsNeeded; i++) {
+    let cardsDifference: number = this._opponentNumCards - this._opponentCards.length;    
+    if (this._firstGameStateUpdate) this.updateOpponentAllOpponentCardsOnStart();
+    else
+      if (cardsDifference < 0) this.opponentCardPlay();
+      else if (cardsDifference > 0) this.opponentDrawCard();
+  }
+
+  private updateOpponentAllOpponentCardsOnStart(): void {
+    for (let i = 0; i < this._opponentNumCards; i++) {
       let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
       card.anchor.set(.5, .5);
       card.position.set(100, 50);
       this._opponentCards.push(card);
     }
+  }
+
+  private opponentCardPlay(): void {
+    //this._opponentCards[0].texture = this._cardInPlay.texture;
+    let r: number = Math.floor(Math.random() * this._opponentCards.length);
+    let card: PIXI.Sprite = this._opponentCards[r];
+    this._cardInPlay.position.set(card.x, card.y);
+    this._stage.removeChild(card);
+    this._opponentCards.splice(r, 1);
+  }
+
+  private opponentDrawCard(): void {
+    let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+    card.anchor.set(.5, .5);
+    card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+    this._opponentCards.push(card);
   }
 
   private spawnCard(cardModel): CardSprite {
@@ -140,15 +177,14 @@ export class GameComponent implements OnInit {
   */
 
   private renderGame(): void {
-    this.renderCardInPlay();
     this.renderPlayerCards();
     this.renderOpponentCards();
+    this.renderCardInPlay();
   }
 
   private renderCardInPlay(): void {
-    this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-    this._cardInPlay.position.set(this.DECK_POS.x, this.DECK_POS.y);
     this._stage.addChild(this._cardInPlay);
+    TweenLite.to(this._cardInPlay, .5, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
   }
 
   private renderPlayerCards(): void {
@@ -196,8 +232,10 @@ export class GameComponent implements OnInit {
 
   private playCard(card: CardSprite): void {
     if (!this._gameService.isCurrentPlayer) return;
+    this._stage.removeChild(card);
+    this._stage.addChild(card);
     TweenLite.to(card, .4, {
-      x: this.DECK_POS.x, y: this.DECK_POS.y,
+      x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
       onUpdate: this.render,
       onUpdateScope: this,
       onComplete: this.evaluatePlayedCard,
