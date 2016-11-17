@@ -17,8 +17,8 @@ require('firebase/auth');
 export class FirebaseService {
 
     //will be passed in somehow from dashboard
-    private _gameId: string = "game_123";
-    private _uid: string;
+    private _gameId: string = "game_1234";
+    private _playerId: string;
 
     private _authenticated: Observable<boolean>;
     private _authenticatedSource: BehaviorSubject<boolean>;
@@ -52,7 +52,7 @@ export class FirebaseService {
     auth(): void {
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                this._uid = user.uid;
+                this._playerId = user.uid;
                 this._authenticatedSource.next(true);
             }
             else {
@@ -76,14 +76,14 @@ export class FirebaseService {
     }
 
     getHand(): Promise<GameState> {
-        console.log(this.uid);
-        return firebase.database().ref(this._gameId + "/players/" + this._uid)
+        return firebase.database().ref(this._gameId + "/players/" + this._playerId)
             .once('value')
             .then(snapshot => this.getPublic(snapshot.val().hand as CardModel[]))
     }
 
     getPublic(hand: CardModel[]): Promise<GameState> {
-        this._newGameState.hand = hand;
+        // convert to array -- do this here or in game service?        
+        this._newGameState.hand = Object.keys(hand).map(key => hand[key]);
         return firebase.database().ref(this._gameId + "/public")
             .once('value')
             .then(snapshot => this.completeGameState(snapshot.val()))
@@ -91,7 +91,10 @@ export class FirebaseService {
 
     completeGameState(data: any): GameState {
         this._newGameState.cardInPlay = data.cardInPlay;
-        this._newGameState.players = data.players;
+        // convert to array -- do this here or in game service?        
+        this._newGameState.players = Object.keys(data.players)
+            .map(key => data.players[key]);
+        console.log(this._newGameState);
         return this._newGameState;
     }
 
@@ -99,18 +102,44 @@ export class FirebaseService {
         DRAW CARD
     */
     drawCardForCurrentUser(): void {
+        console.log("drawing card....");
         firebase.database().ref(this._gameId + "/deck")
-            .limitToFirst(1)
             .once('value')
-            .then(snapshot => this.updatePlayerHand(snapshot));
+            .then(snapshot => this.updatePlayerHand(snapshot.val()));
     }
 
-    updatePlayerHand(snapshot) {
+    updatePlayerHand(deck): void {
+        let cards: Object[] = Object.keys(deck).map(key => deck[key]);
+        cards.sort((a: any, b: any) => {
+            if (a.deckOrder < b.deckOrder) return -1;
+            if (a.deckOrder > b.deckOrder) return 1;
+            return 0;
+        });
+        let card: any = cards.pop();
+        card.rendered = false;
         let updates: Object = {};
+        updates[this._gameId + "/deck/" + card.id] = null;
+        updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
+        updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
+        updates[this._gameId + "/currentPlayer"] = "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref()
+            .update(updates, snapshot => this._currentPlayerSource.next(this._playerId));
+    }
 
-        firebase.database().ref(this._gameId + "/players/" + this._uid + "/hand/5")
-            .update(snapshot.val()[0])
-            .then(snapshot => console.log("did it"));
+    /* 
+        PLAYS
+    */
+
+    playCard(cardInPlay: CardModel, playerHand: Object): void {
+        let update: Object = {};
+        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
+        update[this._gameId + "/public/cardInPlay"] = cardInPlay;
+        update[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = Object.keys(playerHand).length;
+
+        //// dev - make current player logic
+        update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref().update(update);
     }
 
     //GET SET
@@ -123,7 +152,7 @@ export class FirebaseService {
         return this._currentPlayer;
     }
 
-    get uid(): string {
-        return this._uid;
+    get playerId(): string {
+        return this._playerId;
     }
 }
