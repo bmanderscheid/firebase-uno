@@ -25,6 +25,8 @@ var FirebaseService = (function () {
         this._authenticated = this._authenticatedSource.asObservable();
         this._currentPlayerSource = new BehaviorSubject_1.BehaviorSubject("-1");
         this._currentPlayer = this._currentPlayerSource.asObservable();
+        this._moveMadeSource = new BehaviorSubject_1.BehaviorSubject("-1");
+        this._moveMade = this._moveMadeSource.asObservable();
         // move this shit?
         // synchronous
         var config = {
@@ -54,6 +56,8 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.database().ref(this._gameId + "/currentPlayer")
             .on('value', function (snapshot) { return _this._currentPlayerSource.next(snapshot.val()); });
+        firebase.database().ref(this._gameId + "/public/move")
+            .on('value', function (snapshot) { return _this._moveMadeSource.next(snapshot.val()); });
     };
     // this will return a proper game state class that the service can decipher
     FirebaseService.prototype.getGameState = function () {
@@ -107,8 +111,8 @@ var FirebaseService = (function () {
         var updates = {};
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
+        updates[this._gameId + "/public/move"] = new Date().toLocaleString();
         updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
-        updates[this._gameId + "/currentPlayer"] = "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
         firebase.database().ref()
             .update(updates, function (snapshot) { return _this._currentPlayerSource.next(_this._playerId); });
     };
@@ -125,6 +129,15 @@ var FirebaseService = (function () {
             "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
         firebase.database().ref().update(update);
     };
+    // redundant with above except for card in play
+    FirebaseService.prototype.pass = function (playerHand) {
+        var update = {};
+        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
+        //// dev - make current player logic
+        update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref().update(update);
+    };
     Object.defineProperty(FirebaseService.prototype, "authenticated", {
         //GET SET
         get: function () {
@@ -136,6 +149,13 @@ var FirebaseService = (function () {
     Object.defineProperty(FirebaseService.prototype, "currentPlayer", {
         get: function () {
             return this._currentPlayer;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirebaseService.prototype, "moveMade", {
+        get: function () {
+            return this._moveMade;
         },
         enumerable: true,
         configurable: true

@@ -15,11 +15,13 @@ var GameComponent = (function () {
     function GameComponent(_gameService) {
         this._gameService = _gameService;
         //move to config(s)
+        this.GAME_SPEED = .5;
         this.PLAYER_REALM_Y = 640;
         this.OPPONENT_REALM_Y = 140;
         this.DISCARD_POS = { x: 600, y: 384 };
         this.DECK_POS = { x: 450, y: 384 };
         this._firstGameStateUpdate = true;
+        this._canDraw = true;
     }
     GameComponent.prototype.ngOnInit = function () {
         this.preparePIXI();
@@ -52,7 +54,7 @@ var GameComponent = (function () {
             _this._currentGameState = gameState;
             _this.updateGame();
             _this.renderGame();
-            _this._firstGameStateUpdate = false; // set to false so rendered property is honored      
+            _this._firstGameStateUpdate = false; // set to false so rendered property is honored         
         });
     };
     GameComponent.prototype.drawUI = function () {
@@ -89,6 +91,15 @@ var GameComponent = (function () {
             .filter(function (player) { return player.uid != _this._gameService.playerId; })[0];
         this._opponentNumCards = opponent.cardsInHand;
         this.updateOpponentCards();
+        // seriously flawed
+        //evaluate a force turnover after game speed is complete
+        TweenLite.delayedCall(this.GAME_SPEED, function () {
+            if (_this._gameService.isCurrentPlayer
+                && !_this._canDraw
+                && _this.isPlayPossible())
+                _this.pass();
+            ;
+        });
     };
     GameComponent.prototype.updatePlayerCards = function () {
         var _this = this;
@@ -143,7 +154,7 @@ var GameComponent = (function () {
         card.render();
         card.interactive = true;
         card.anchor.set(.5, .5);
-        card.position.set(100, 50);
+        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
         return card;
     };
     /*
@@ -156,7 +167,7 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.renderCardInPlay = function () {
         this._stage.addChild(this._cardInPlay);
-        TweenLite.to(this._cardInPlay, .5, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
+        TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
     };
     GameComponent.prototype.renderPlayerCards = function () {
         var stageCenter = 512;
@@ -165,7 +176,7 @@ var GameComponent = (function () {
         for (var _i = 0, _a = this._playerCards; _i < _a.length; _i++) {
             var sprite = _a[_i];
             this._stage.addChild(sprite);
-            TweenLite.to(sprite, .5, {
+            TweenLite.to(sprite, this.GAME_SPEED, {
                 onUpdate: this.render,
                 onUpdateScope: this,
                 x: xPos,
@@ -183,7 +194,7 @@ var GameComponent = (function () {
         for (var _i = 0, _a = this._opponentCards; _i < _a.length; _i++) {
             var sprite = _a[_i];
             this._stage.addChild(sprite);
-            TweenLite.to(sprite, .5, {
+            TweenLite.to(sprite, this.GAME_SPEED, {
                 onUpdate: this.render,
                 onUpdateScope: this,
                 x: xPos,
@@ -196,14 +207,12 @@ var GameComponent = (function () {
     /*
         GAME EVALUATIONS AND ACTIONS
     */
-    GameComponent.prototype.enableMoves = function () {
-    };
     GameComponent.prototype.playCard = function (card) {
         if (!this._gameService.isCurrentPlayer)
             return;
         this._stage.removeChild(card);
         this._stage.addChild(card);
-        TweenLite.to(card, .4, {
+        TweenLite.to(card, this.GAME_SPEED, {
             x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
             onUpdateScope: this,
@@ -222,7 +231,26 @@ var GameComponent = (function () {
         }
     };
     GameComponent.prototype.drawCard = function () {
-        this._gameService.drawCard();
+        if (this._canDraw) {
+            this._canDraw = false;
+            this._gameService.drawCard();
+        }
+    };
+    GameComponent.prototype.resetPlayerForNextTurn = function () {
+        this._canDraw = true;
+    };
+    GameComponent.prototype.isPlayPossible = function () {
+        for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
+            var card = _a[_i];
+            if (card.value == this._cardModelInPlay.value
+                || card.color == this._cardModelInPlay.color)
+                return false;
+        }
+        console.log("no play possible");
+        return true;
+    };
+    GameComponent.prototype.pass = function () {
+        this._gameService.pass();
     };
     /*
       UTILITY

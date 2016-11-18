@@ -26,6 +26,9 @@ export class FirebaseService {
     private _currentPlayer: Observable<string>;
     private _currentPlayerSource: BehaviorSubject<string>;
 
+    private _moveMade: Observable<string>;
+    private _moveMadeSource: BehaviorSubject<string>;
+
     private _newGameState: GameState;
 
 
@@ -36,6 +39,8 @@ export class FirebaseService {
         this._currentPlayerSource = new BehaviorSubject<string>("-1");
         this._currentPlayer = this._currentPlayerSource.asObservable();
 
+        this._moveMadeSource = new BehaviorSubject<string>("-1");
+        this._moveMade = this._moveMadeSource.asObservable();
 
         // move this shit?
         // synchronous
@@ -66,6 +71,8 @@ export class FirebaseService {
     init(): void {
         firebase.database().ref(this._gameId + "/currentPlayer")
             .on('value', snapshot => this._currentPlayerSource.next(snapshot.val()));
+        firebase.database().ref(this._gameId + "/public/move")
+            .on('value', snapshot => this._moveMadeSource.next(snapshot.val()));
     }
 
     // this will return a proper game state class that the service can decipher
@@ -120,8 +127,8 @@ export class FirebaseService {
         let updates: Object = {};
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
+        updates[this._gameId + "/public/move"] = new Date().toLocaleString();
         updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
-        updates[this._gameId + "/currentPlayer"] = "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
         firebase.database().ref()
             .update(updates, snapshot => this._currentPlayerSource.next(this._playerId));
     }
@@ -142,6 +149,17 @@ export class FirebaseService {
         firebase.database().ref().update(update);
     }
 
+    // redundant with above except for card in play
+    pass(playerHand:Object):void{
+        let update: Object = {};
+        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;                
+
+        //// dev - make current player logic
+        update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
+            "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        firebase.database().ref().update(update);
+    }
+
     //GET SET
 
     get authenticated(): Observable<boolean> {
@@ -150,6 +168,10 @@ export class FirebaseService {
 
     get currentPlayer(): Observable<string> {
         return this._currentPlayer;
+    }
+
+    get moveMade():Observable<string>{
+        return this._moveMade;
     }
 
     get playerId(): string {

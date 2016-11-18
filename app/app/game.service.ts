@@ -35,11 +35,15 @@ export class GameService {
     private initGameService(): void {
         this._firebaseService.init();
         this._firebaseService.currentPlayer.subscribe((playerId: string) => {
-            console.log("player change");
             if (Number(playerId) < 0) return; // ignore first subscribe update    
             this._currentPlayer = playerId;
             this.getGameState();
+        });
+        this._firebaseService.moveMade.subscribe((move: string) => {
+            if (Number(move) < 0) return; // ignore first subscribe update                
+            this.getGameState();
         })
+
     }
 
     private getGameState(): void {
@@ -63,6 +67,17 @@ export class GameService {
 
     drawCard(): void {
         this._firebaseService.drawCardForCurrentUser();
+    }
+
+    // player passes - but update hand so render values get update
+    pass(): void {
+        let gameState: GameState = this._gameStateSource.value;
+        let playerHand: CardModel[] = this._gameStateSource.value.hand;
+        let newPlayerHand = playerHand.reduce((o, v, i) => {
+            o[v.id] = v;
+            return o;
+        }, {});        
+        this._firebaseService.pass(newPlayerHand);
     }
 
     /*

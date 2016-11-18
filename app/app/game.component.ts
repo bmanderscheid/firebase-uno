@@ -16,6 +16,7 @@ export class GameComponent implements OnInit {
   private _loader: PIXI.loaders.Loader;
 
   //move to config(s)
+  private GAME_SPEED: number = .5;
   private PLAYER_REALM_Y: number = 640;
   private OPPONENT_REALM_Y: number = 140;
   private DISCARD_POS: any = { x: 600, y: 384 }
@@ -28,6 +29,7 @@ export class GameComponent implements OnInit {
   private _opponentNumCards: number;
 
   private _firstGameStateUpdate: boolean; // render all cards on first load
+  private _canDraw: boolean;
 
   //sprites
   private _playerCards: CardSprite[];
@@ -38,6 +40,7 @@ export class GameComponent implements OnInit {
 
   constructor(private _gameService: GameService) {
     this._firstGameStateUpdate = true;
+    this._canDraw = true;
   }
 
   ngOnInit() {
@@ -72,7 +75,7 @@ export class GameComponent implements OnInit {
       this._currentGameState = gameState;
       this.updateGame();
       this.renderGame();
-      this._firstGameStateUpdate = false; // set to false so rendered property is honored      
+      this._firstGameStateUpdate = false; // set to false so rendered property is honored         
     })
   }
 
@@ -112,6 +115,15 @@ export class GameComponent implements OnInit {
     this._opponentNumCards = opponent.cardsInHand;
     this.updateOpponentCards();
 
+    
+    // seriously flawed
+    //evaluate a force turnover after game speed is complete
+    TweenLite.delayedCall(this.GAME_SPEED, () => {
+      if (this._gameService.isCurrentPlayer
+        && !this._canDraw
+        && this.isPlayPossible())this.pass();;
+    })
+
   }
 
   private updatePlayerCards(): void {
@@ -138,7 +150,7 @@ export class GameComponent implements OnInit {
   }
 
   private updateOpponentCards(): void {
-    let cardsDifference: number = this._opponentNumCards - this._opponentCards.length;    
+    let cardsDifference: number = this._opponentNumCards - this._opponentCards.length;
     if (this._firstGameStateUpdate) this.updateOpponentAllOpponentCardsOnStart();
     else
       if (cardsDifference < 0) this.opponentCardPlay();
@@ -175,7 +187,7 @@ export class GameComponent implements OnInit {
     card.render();
     card.interactive = true;
     card.anchor.set(.5, .5);
-    card.position.set(100, 50);
+    card.position.set(this.DECK_POS.x, this.DECK_POS.y);
     return card;
   }
 
@@ -191,7 +203,7 @@ export class GameComponent implements OnInit {
 
   private renderCardInPlay(): void {
     this._stage.addChild(this._cardInPlay);
-    TweenLite.to(this._cardInPlay, .5, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
+    TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
   }
 
   private renderPlayerCards(): void {
@@ -200,7 +212,7 @@ export class GameComponent implements OnInit {
     let xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
     for (let sprite of this._playerCards) {
       this._stage.addChild(sprite);
-      TweenLite.to(sprite, .5, {
+      TweenLite.to(sprite, this.GAME_SPEED, {
         onUpdate: this.render,
         onUpdateScope: this,
         x: xPos,
@@ -218,7 +230,7 @@ export class GameComponent implements OnInit {
     let xPos = stageCenter - (widthOfHand / 2) + (this._opponentCards[0].width / 2);
     for (let sprite of this._opponentCards) {
       this._stage.addChild(sprite);
-      TweenLite.to(sprite, .5, {
+      TweenLite.to(sprite, this.GAME_SPEED, {
         onUpdate: this.render,
         onUpdateScope: this,
         x: xPos,
@@ -233,15 +245,11 @@ export class GameComponent implements OnInit {
       GAME EVALUATIONS AND ACTIONS    
   */
 
-  private enableMoves(): void {
-
-  }
-
   private playCard(card: CardSprite): void {
     if (!this._gameService.isCurrentPlayer) return;
     this._stage.removeChild(card);
     this._stage.addChild(card);
-    TweenLite.to(card, .4, {
+    TweenLite.to(card, this.GAME_SPEED, {
       x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
       onUpdate: this.render,
       onUpdateScope: this,
@@ -259,7 +267,11 @@ export class GameComponent implements OnInit {
 =======
       this.pullCardSpriteFromPlayerCards(card);
       this._gameService.playCard(card.cardModel);
+<<<<<<< HEAD
 >>>>>>> 86cc596558e4da40746eff03b8217ffa00a3f2b1
+=======
+      this.resetPlayerForNextTurn();
+>>>>>>> noFBArrays
     }
     else {
       this.renderPlayerCards();
@@ -267,7 +279,27 @@ export class GameComponent implements OnInit {
   }
 
   private drawCard(): void {
-    this._gameService.drawCard();
+    if (this._canDraw) {
+      this._canDraw = false;
+      this._gameService.drawCard();
+    }
+  }
+
+  private resetPlayerForNextTurn(): void {
+    this._canDraw = true;
+  }
+
+  private isPlayPossible(): boolean {
+    for (let card of this._playerHand) {
+      if (card.value == this._cardModelInPlay.value
+        || card.color == this._cardModelInPlay.color) return false;
+    }
+    console.log("no play possible");
+    return true;
+  }
+
+  private pass(): void {
+    this._gameService.pass();
   }
 
   /*
