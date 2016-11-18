@@ -294,6 +294,7 @@
             }
         },
         "public": {
+            "move": "-1",
             "cardInPlay": {
                 "id": "g6",
                 "color": "green",
@@ -303,12 +304,12 @@
             "players": {
                 "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
                     "cardsInHand": 5,
-                    "uid":"JLNl39V9SZc1ri8FXe7bVCFbyBN2",
+                    "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2",
                     "playTurn": 1
                 },
                 "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
                     "cardsInHand": 4,
-                    "uid":"lcSyk6JsAMcuDrnOIrX06vKA5MD3",
+                    "uid": "lcSyk6JsAMcuDrnOIrX06vKA5MD3",
                     "playTurn": 0
                 }
             }

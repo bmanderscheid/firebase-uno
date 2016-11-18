@@ -32,10 +32,14 @@ var GameService = (function () {
         var _this = this;
         this._firebaseService.init();
         this._firebaseService.currentPlayer.subscribe(function (playerId) {
-            console.log("player change");
             if (Number(playerId) < 0)
                 return; // ignore first subscribe update    
             _this._currentPlayer = playerId;
+            _this.getGameState();
+        });
+        this._firebaseService.moveMade.subscribe(function (move) {
+            if (Number(move) < 0)
+                return; // ignore first subscribe update                
             _this.getGameState();
         });
     };
@@ -59,6 +63,16 @@ var GameService = (function () {
     };
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCardForCurrentUser();
+    };
+    // player passes - but update hand so render values get update
+    GameService.prototype.pass = function () {
+        var gameState = this._gameStateSource.value;
+        var playerHand = this._gameStateSource.value.hand;
+        var newPlayerHand = playerHand.reduce(function (o, v, i) {
+            o[v.id] = v;
+            return o;
+        }, {});
+        this._firebaseService.pass(newPlayerHand);
     };
     /*
         UTILITY
