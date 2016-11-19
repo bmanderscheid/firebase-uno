@@ -18,7 +18,7 @@ export class FirebaseService {
 
     //will be passed in somehow from dashboard
     private _gameId: string = "game_1234";
-    private _playerId: string;
+    private _playerId: string = "lcSyk6JsAMcuDrnOIrX06vKA5MD3";
 
     private _authenticated: Observable<boolean>;
     private _authenticatedSource: BehaviorSubject<boolean>;
@@ -28,6 +28,9 @@ export class FirebaseService {
 
     private _moveMade: Observable<string>;
     private _moveMadeSource: BehaviorSubject<string>;
+
+    private _playerHand: Observable<CardModel>;
+    private _playerHandSource: BehaviorSubject<CardModel>;
 
     private _newGameState: GameState;
 
@@ -42,6 +45,9 @@ export class FirebaseService {
         this._moveMadeSource = new BehaviorSubject<string>("-1");
         this._moveMade = this._moveMadeSource.asObservable();
 
+        this._playerHandSource = new BehaviorSubject<CardModel>(null);
+        this._playerHand = this._playerHandSource.asObservable();
+
         // move this shit?
         // synchronous
         var config = {
@@ -54,29 +60,24 @@ export class FirebaseService {
         firebase.initializeApp(config);
     }
 
-    auth(): void {
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                this._playerId = user.uid;
-                this._authenticatedSource.next(true);
-            }
-            else {
-                var provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithRedirect(provider);
-            }
-        });
+    loadGame():void{
+
     }
 
     //set up the listener for player change in firebase
     init(): void {
-        firebase.database().ref(this._gameId + "/currentPlayer")
-            .on('value', snapshot => this._currentPlayerSource.next(snapshot.val()));
-        firebase.database().ref(this._gameId + "/public/move")
-            .on('value', snapshot => this._moveMadeSource.next(snapshot.val()));
+        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand")
+            .on('child_added', snapshot => this._playerHandSource.next(snapshot.val() as CardModel));
+        
+        firebase.database().ref(this._gameId + "/gameState")
+            .on('value', snapshot => this.prepareGameState(snapshot.val()));
+    }
+
+    prepareGameState(gameState:Object):void{
+        
     }
 
     // this will return a proper game state class that the service can decipher
-
     getGameState(): Promise<GameState> {
         this._newGameState = new GameState();
         return this.getHand();
@@ -175,6 +176,10 @@ export class FirebaseService {
 
     get moveMade():Observable<string>{
         return this._moveMade;
+    }
+
+    get playerHand():Observable<CardModel>{
+        return this._playerHand;
     }
 
     get playerId(): string {

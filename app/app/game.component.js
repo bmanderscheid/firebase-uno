@@ -49,12 +49,11 @@ var GameComponent = (function () {
         this._opponentCards = [];
         this._gameService.init();
         this._gameService.gameState.subscribe(function (gameState) {
-            if (!gameState)
-                return;
             _this._currentGameState = gameState;
+            _this._playerHand = gameState.hand;
             _this.updateGame();
             _this.renderGame();
-            _this._firstGameStateUpdate = false; // set to false so rendered property is honored         
+            //this._firstGameStateUpdate = false; // set to false so rendered property is honored         
         });
     };
     GameComponent.prototype.drawUI = function () {
@@ -70,13 +69,12 @@ var GameComponent = (function () {
       GAME UPDTATE
     */
     GameComponent.prototype.updateGame = function () {
-        var _this = this;
         // card in playCard
-        this._cardModelInPlay = this._currentGameState.cardInPlay;
-        this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-        this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
+        // this._cardModelInPlay = this._currentGameState.cardInPlay;
+        // this._cardInPlay = this.spawnCard(this._cardModelInPlay);
+        // this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
         // player hand     
-        this._playerHand = this._currentGameState.hand;
+        console.log(this._playerHand);
         this.updatePlayerCards();
         this._playerCards.sort(function (a, b) {
             if (a.cardModel.id < b.cardModel.id)
@@ -87,35 +85,27 @@ var GameComponent = (function () {
         });
         // opponent hand
         // sloppy player management.  Wanting to move on so this will do for now
-        var opponent = this._currentGameState.players
-            .filter(function (player) { return player.uid != _this._gameService.playerId; })[0];
-        this._opponentNumCards = opponent.cardsInHand;
-        this.updateOpponentCards();
+        // let opponent: PlayerModel = this._currentGameState.players
+        //   .filter(player => player.uid != this._gameService.playerId)[0];
+        // this._opponentNumCards = opponent.cardsInHand;
+        // this.updateOpponentCards();
         // seriously flawed
         //evaluate a force turnover after game speed is complete
-        TweenLite.delayedCall(this.GAME_SPEED, function () {
-            if (_this._gameService.isCurrentPlayer
-                && !_this._canDraw
-                && _this.isPlayPossible())
-                _this.pass();
-            ;
-        });
+        // TweenLite.delayedCall(this.GAME_SPEED, () => {
+        //   if (this._gameService.isCurrentPlayer
+        //     && !this._canDraw
+        //     && this.isPlayPossible()) this.pass();;
+        // })
     };
     GameComponent.prototype.updatePlayerCards = function () {
         var _this = this;
         for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
             var cardModel = _a[_i];
-            var spawnCard = false;
-            if (this._firstGameStateUpdate)
-                spawnCard = true;
-            else if (!cardModel.rendered)
-                spawnCard = true;
             // spawn card
-            if (spawnCard) {
+            if (cardModel && !cardModel.spawned) {
                 var card = this.spawnCard(cardModel);
                 card.on("mousedown", function (e) { return _this.playCard(e.target); });
                 this._playerCards.push(card);
-                spawnCard = false;
             }
         }
     };
@@ -151,6 +141,7 @@ var GameComponent = (function () {
         this._opponentCards.push(card);
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
+        console.log("spawn");
         var card = new card_sprite_1.CardSprite(cardModel);
         card.render();
         card.interactive = true;
@@ -162,9 +153,11 @@ var GameComponent = (function () {
       GAME RENDER
     */
     GameComponent.prototype.renderGame = function () {
-        this.renderPlayerCards();
-        this.renderOpponentCards();
-        this.renderCardInPlay();
+        // possibly evaluate this on gamestate update
+        if (this._playerHand.length > 0)
+            this.renderPlayerCards();
+        //this.renderOpponentCards();
+        //this.renderCardInPlay();
     };
     GameComponent.prototype.renderCardInPlay = function () {
         this._stage.addChild(this._cardInPlay);

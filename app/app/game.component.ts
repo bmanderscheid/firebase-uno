@@ -71,11 +71,11 @@ export class GameComponent implements OnInit {
     this._opponentCards = [];
     this._gameService.init();
     this._gameService.gameState.subscribe((gameState: GameState) => {
-      if (!gameState) return;
       this._currentGameState = gameState;
+      this._playerHand = gameState.hand;
       this.updateGame();
       this.renderGame();
-      this._firstGameStateUpdate = false; // set to false so rendered property is honored         
+      //this._firstGameStateUpdate = false; // set to false so rendered property is honored         
     })
   }
 
@@ -94,12 +94,12 @@ export class GameComponent implements OnInit {
 
   private updateGame(): void {
     // card in playCard
-    this._cardModelInPlay = this._currentGameState.cardInPlay;
-    this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-    this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
+    // this._cardModelInPlay = this._currentGameState.cardInPlay;
+    // this._cardInPlay = this.spawnCard(this._cardModelInPlay);
+    // this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
 
     // player hand     
-    this._playerHand = this._currentGameState.hand;
+    console.log(this._playerHand);
     this.updatePlayerCards();
     this._playerCards.sort((a: CardSprite, b: CardSprite) => {
       if (a.cardModel.id < b.cardModel.id) return -1;
@@ -110,34 +110,29 @@ export class GameComponent implements OnInit {
     // opponent hand
     // sloppy player management.  Wanting to move on so this will do for now
 
-    let opponent: PlayerModel = this._currentGameState.players
-      .filter(player => player.uid != this._gameService.playerId)[0];
-    this._opponentNumCards = opponent.cardsInHand;
-    this.updateOpponentCards();
+    // let opponent: PlayerModel = this._currentGameState.players
+    //   .filter(player => player.uid != this._gameService.playerId)[0];
+    // this._opponentNumCards = opponent.cardsInHand;
+    // this.updateOpponentCards();
 
-    
+
     // seriously flawed
     //evaluate a force turnover after game speed is complete
-    TweenLite.delayedCall(this.GAME_SPEED, () => {
-      if (this._gameService.isCurrentPlayer
-        && !this._canDraw
-        && this.isPlayPossible())this.pass();;
-    })
+    // TweenLite.delayedCall(this.GAME_SPEED, () => {
+    //   if (this._gameService.isCurrentPlayer
+    //     && !this._canDraw
+    //     && this.isPlayPossible()) this.pass();;
+    // })
 
   }
 
   private updatePlayerCards(): void {
     for (let cardModel of this._playerHand) {
-      let spawnCard: boolean = false;
-      if (this._firstGameStateUpdate) spawnCard = true;
-      else
-        if (!cardModel.rendered) spawnCard = true;
       // spawn card
-      if (spawnCard) {
+      if (cardModel && !cardModel.spawned) {
         let card: CardSprite = this.spawnCard(cardModel);
         card.on("mousedown", (e) => this.playCard(e.target));
         this._playerCards.push(card);
-        spawnCard = false
       }
     }
   }
@@ -176,6 +171,7 @@ export class GameComponent implements OnInit {
   }
 
   private spawnCard(cardModel): CardSprite {
+    console.log("spawn");
     let card: CardSprite = new CardSprite(cardModel);
     card.render();
     card.interactive = true;
@@ -189,9 +185,10 @@ export class GameComponent implements OnInit {
   */
 
   private renderGame(): void {
-    this.renderPlayerCards();
-    this.renderOpponentCards();
-    this.renderCardInPlay();
+    // possibly evaluate this on gamestate update
+    if (this._playerHand.length > 0) this.renderPlayerCards();
+    //this.renderOpponentCards();
+    //this.renderCardInPlay();
   }
 
   private renderCardInPlay(): void {

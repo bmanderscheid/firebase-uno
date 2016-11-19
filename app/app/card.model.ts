@@ -1,6 +1,7 @@
 export class CardModel {
     id: string;
     color: string;
-    rendered: boolean;
+    rendered: boolean = false;
+    spawned:boolean = false;
     value: number;
 }

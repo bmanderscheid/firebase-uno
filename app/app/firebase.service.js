@@ -21,12 +21,15 @@ var FirebaseService = (function () {
     function FirebaseService() {
         //will be passed in somehow from dashboard
         this._gameId = "game_1234";
+        this._playerId = "lcSyk6JsAMcuDrnOIrX06vKA5MD3";
         this._authenticatedSource = new BehaviorSubject_1.BehaviorSubject(false);
         this._authenticated = this._authenticatedSource.asObservable();
         this._currentPlayerSource = new BehaviorSubject_1.BehaviorSubject("-1");
         this._currentPlayer = this._currentPlayerSource.asObservable();
         this._moveMadeSource = new BehaviorSubject_1.BehaviorSubject("-1");
         this._moveMade = this._moveMadeSource.asObservable();
+        this._playerHandSource = new BehaviorSubject_1.BehaviorSubject(null);
+        this._playerHand = this._playerHandSource.asObservable();
         // move this shit?
         // synchronous
         var config = {
@@ -38,26 +41,17 @@ var FirebaseService = (function () {
         };
         firebase.initializeApp(config);
     }
-    FirebaseService.prototype.auth = function () {
-        var _this = this;
-        firebase.auth().onAuthStateChanged(function (user) {
-            if (user) {
-                _this._playerId = user.uid;
-                _this._authenticatedSource.next(true);
-            }
-            else {
-                var provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithRedirect(provider);
-            }
-        });
+    FirebaseService.prototype.loadGame = function () {
     };
     //set up the listener for player change in firebase
     FirebaseService.prototype.init = function () {
         var _this = this;
-        firebase.database().ref(this._gameId + "/currentPlayer")
-            .on('value', function (snapshot) { return _this._currentPlayerSource.next(snapshot.val()); });
-        firebase.database().ref(this._gameId + "/public/move")
-            .on('value', function (snapshot) { return _this._moveMadeSource.next(snapshot.val()); });
+        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand")
+            .on('child_added', function (snapshot) { return _this._playerHandSource.next(snapshot.val()); });
+        firebase.database().ref(this._gameId + "/gameState")
+            .on('value', function (snapshot) { return _this.prepareGameState(snapshot.val()); });
+    };
+    FirebaseService.prototype.prepareGameState = function (gameState) {
     };
     // this will return a proper game state class that the service can decipher
     FirebaseService.prototype.getGameState = function () {
@@ -157,6 +151,13 @@ var FirebaseService = (function () {
     Object.defineProperty(FirebaseService.prototype, "moveMade", {
         get: function () {
             return this._moveMade;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirebaseService.prototype, "playerHand", {
+        get: function () {
+            return this._playerHand;
         },
         enumerable: true,
         configurable: true

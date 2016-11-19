@@ -11,43 +11,35 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 //imports
 var core_1 = require('@angular/core');
 var firebase_service_1 = require('../app/firebase.service');
+var game_state_model_1 = require('../app/game-state.model');
 require('rxjs/add/operator/toPromise');
 var BehaviorSubject_1 = require('rxjs/BehaviorSubject');
 var GameService = (function () {
     function GameService(_firebaseService) {
         this._firebaseService = _firebaseService;
-        this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(null);
+        this._currentGameState = new game_state_model_1.GameState();
+        this._currentGameState.hand = [];
+        this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(this._currentGameState);
         this._gameState = this._gameStateSource.asObservable();
+        this._playerHand = [];
     }
     GameService.prototype.init = function () {
         var _this = this;
-        this._firebaseService.auth();
-        this._firebaseService.authenticated.subscribe(function (auth) {
-            if (auth) {
-                _this.initGameService();
-            }
+        this._firebaseService.init();
+        this._firebaseService.playerHand.subscribe(function (card) {
+            if (card)
+                _this._currentGameState.hand.push(card);
+            _this.sendNextGameState();
         });
+    };
+    GameService.prototype.sendNextGameState = function () {
+        this._gameStateSource.next(this._currentGameState);
     };
     GameService.prototype.initGameService = function () {
-        var _this = this;
-        this._firebaseService.init();
-        this._firebaseService.currentPlayer.subscribe(function (playerId) {
-            if (Number(playerId) < 0)
-                return; // ignore first subscribe update    
-            _this._currentPlayer = playerId;
-            _this.getGameState();
-        });
-        this._firebaseService.moveMade.subscribe(function (move) {
-            if (Number(move) < 0)
-                return; // ignore first subscribe update                
-            _this.getGameState();
-        });
     };
-    GameService.prototype.getGameState = function () {
-        var _this = this;
-        this._firebaseService.getGameState().then(function (response) {
-            return _this._gameStateSource.next(response);
-        });
+    GameService.prototype.loadGame = function () {
+        // this._firebaseService.getGameState().then((response: GameState) =>
+        //     this._gameStateSource.next(response));
     };
     /*
         GAME ACTIONS

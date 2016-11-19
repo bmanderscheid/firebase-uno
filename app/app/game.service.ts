@@ -13,42 +13,43 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class GameService {
 
+    private _currentGameState:GameState;
+
     private _gameState: Observable<GameState>;
     private _gameStateSource: BehaviorSubject<GameState>;
 
     private _currentPlayer: string;
 
+    private _playerHand: CardModel[];
+
     constructor(private _firebaseService: FirebaseService) {
-        this._gameStateSource = new BehaviorSubject<GameState>(null);
+        this._currentGameState = new GameState();
+        this._currentGameState.hand = [];
+        this._gameStateSource = new BehaviorSubject<GameState>(this._currentGameState);
         this._gameState = this._gameStateSource.asObservable();
+        this._playerHand = [];
     }
 
     init(): void {
-        this._firebaseService.auth();
-        this._firebaseService.authenticated.subscribe((auth: boolean) => {
-            if (auth) {
-                this.initGameService();
-            }
+        this._firebaseService.init();
+        this._firebaseService.playerHand.subscribe((card: CardModel) => {            
+            if (card) this._currentGameState.hand.push(card);
+            this.sendNextGameState();
         });
+    }
+
+    private sendNextGameState():void{
+        this._gameStateSource.next(this._currentGameState);
     }
 
     private initGameService(): void {
-        this._firebaseService.init();
-        this._firebaseService.currentPlayer.subscribe((playerId: string) => {
-            if (Number(playerId) < 0) return; // ignore first subscribe update    
-            this._currentPlayer = playerId;
-            this.getGameState();
-        });
-        this._firebaseService.moveMade.subscribe((move: string) => {
-            if (Number(move) < 0) return; // ignore first subscribe update                
-            this.getGameState();
-        })
+
 
     }
 
-    private getGameState(): void {
-        this._firebaseService.getGameState().then((response: GameState) =>
-            this._gameStateSource.next(response));
+    private loadGame(): void {
+        // this._firebaseService.getGameState().then((response: GameState) =>
+        //     this._gameStateSource.next(response));
     }
 
     /*
