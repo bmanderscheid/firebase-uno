@@ -128,6 +128,9 @@ export class FirebaseService {
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
         updates[this._gameId + "/public/move"] = new Date().toLocaleString();
+
+
+        //// get actual number in hand
         updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
         firebase.database().ref()
             .update(updates, snapshot => this._currentPlayerSource.next(this._playerId));

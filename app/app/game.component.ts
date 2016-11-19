@@ -7,7 +7,7 @@ import { PlayerModel } from '../app/player.model';
 
 @Component({
   selector: 'game',
-  template: '<div id="stage"></div>'
+  template: '<div style="position:absolute">CURRENT PLAYER: {{_gameService.currentPlayer}}</div><div id="stage"></div>'
 })
 export class GameComponent implements OnInit {
 

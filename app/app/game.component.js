@@ -269,7 +269,7 @@ var GameComponent = (function () {
     GameComponent = __decorate([
         core_1.Component({
             selector: 'game',
-            template: '<div id="stage"></div>'
+            template: '<div style="position:absolute">CURRENT PLAYER: {{_gameService.currentPlayer}}</div><div id="stage"></div>'
         }), 
         __metadata('design:paramtypes', [game_service_1.GameService])
     ], GameComponent);

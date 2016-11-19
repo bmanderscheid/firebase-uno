@@ -95,6 +95,13 @@ var GameService = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GameService.prototype, "currentPlayer", {
+        get: function () {
+            return this._currentPlayer;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GameService.prototype, "playerId", {
         get: function () {
             return this._firebaseService.playerId;

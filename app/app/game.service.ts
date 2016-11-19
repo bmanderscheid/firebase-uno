@@ -76,7 +76,7 @@ export class GameService {
         let newPlayerHand = playerHand.reduce((o, v, i) => {
             o[v.id] = v;
             return o;
-        }, {});        
+        }, {});
         this._firebaseService.pass(newPlayerHand);
     }
 
@@ -95,6 +95,10 @@ export class GameService {
 
     get isCurrentPlayer(): boolean {
         return this._currentPlayer == this._firebaseService.playerId;
+    }
+
+    get currentPlayer(): string {
+        return this._currentPlayer;
     }
 
     get playerId(): string {
