@@ -22,8 +22,7 @@ export class GameComponent implements OnInit {
   private DISCARD_POS: any = { x: 600, y: 384 }
   private DECK_POS: any = { x: 450, y: 384 }
 
-  //game state
-  private _currentGameState: GameState;
+  //game state  
   private _playerHand: CardModel[];
   private _cardModelInPlay: CardModel;
   private _opponentNumCards: number;
@@ -71,11 +70,9 @@ export class GameComponent implements OnInit {
     this._opponentCards = [];
     this._gameService.init();
     this._gameService.gameState.subscribe((gameState: GameState) => {
-      this._currentGameState = gameState;
       this._playerHand = gameState.hand;
-      this.updateGame();
+      this.updateGame(gameState);
       this.renderGame();
-      //this._firstGameStateUpdate = false; // set to false so rendered property is honored         
     })
   }
 
@@ -92,42 +89,19 @@ export class GameComponent implements OnInit {
     GAME UPDTATE 
   */
 
-  private updateGame(): void {
-    // card in playCard
-    // this._cardModelInPlay = this._currentGameState.cardInPlay;
-    // this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-    // this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
-
-    // player hand     
-    console.log(this._playerHand);
-    this.updatePlayerCards();
-    this._playerCards.sort((a: CardSprite, b: CardSprite) => {
-      if (a.cardModel.id < b.cardModel.id) return -1;
-      if (a.cardModel.id > b.cardModel.id) return 1;
-      return 0;
-    });
-
-    // opponent hand
-    // sloppy player management.  Wanting to move on so this will do for now
-
-    // let opponent: PlayerModel = this._currentGameState.players
-    //   .filter(player => player.uid != this._gameService.playerId)[0];
-    // this._opponentNumCards = opponent.cardsInHand;
-    // this.updateOpponentCards();
-
-
-    // seriously flawed
-    //evaluate a force turnover after game speed is complete
-    // TweenLite.delayedCall(this.GAME_SPEED, () => {
-    //   if (this._gameService.isCurrentPlayer
-    //     && !this._canDraw
-    //     && this.isPlayPossible()) this.pass();;
-    // })
-
+  private updateGame(gameState: GameState): void {
+    if (gameState.cardInPlay) this.updateCardInPlay(gameState.cardInPlay);
+    if (gameState.hand) this.updatePlayerCards(gameState.hand);
+    if (gameState.players) this.updateOpponentCards(gameState.players[1]); //TODO - hard coded!
   }
 
-  private updatePlayerCards(): void {
-    for (let cardModel of this._playerHand) {
+  private updateCardInPlay(cardModel: CardModel): void {
+    this._cardInPlay = this.spawnCard(cardModel);
+    this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
+  }
+
+  private updatePlayerCards(playerHand: CardModel[]): void {
+    for (let cardModel of playerHand) {
       // spawn card
       if (cardModel && !cardModel.spawned) {
         let card: CardSprite = this.spawnCard(cardModel);
@@ -135,18 +109,19 @@ export class GameComponent implements OnInit {
         this._playerCards.push(card);
       }
     }
+    this._playerCards = this.sortCards(this._playerCards);
   }
 
-  private updateOpponentCards(): void {
-    let cardsDifference: number = this._opponentNumCards - this._opponentCards.length;
-    if (this._firstGameStateUpdate) this.updateOpponentAllOpponentCardsOnStart();
-    else
-      if (cardsDifference < 0) this.opponentCardPlay();
-      else if (cardsDifference > 0) this.opponentDrawCard();
+  private updateOpponentCards(player: PlayerModel): void {
+    let cardsDifference: number = player.cardsInHand - this._opponentCards.length;
+    if (this._opponentCards.length < 1) this.updateOpponentAllOpponentCardsOnStart(player.cardsInHand);
+    // else
+    //   if (cardsDifference < 0) this.opponentCardPlay();
+    //   else if (cardsDifference > 0) this.opponentDrawCard();
   }
 
-  private updateOpponentAllOpponentCardsOnStart(): void {
-    for (let i = 0; i < this._opponentNumCards; i++) {
+  private updateOpponentAllOpponentCardsOnStart(numCards: number): void {
+    for (let i = 0; i < numCards; i++) {
       let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
       card.anchor.set(.5, .5);
       card.position.set(100, 50);
@@ -155,7 +130,6 @@ export class GameComponent implements OnInit {
   }
 
   private opponentCardPlay(): void {
-    //this._opponentCards[0].texture = this._cardInPlay.texture;
     let r: number = Math.floor(Math.random() * this._opponentCards.length);
     let card: PIXI.Sprite = this._opponentCards[r];
     this._cardInPlay.position.set(card.x, card.y);
@@ -171,7 +145,6 @@ export class GameComponent implements OnInit {
   }
 
   private spawnCard(cardModel): CardSprite {
-    console.log("spawn");
     let card: CardSprite = new CardSprite(cardModel);
     card.render();
     card.interactive = true;
@@ -187,11 +160,12 @@ export class GameComponent implements OnInit {
   private renderGame(): void {
     // possibly evaluate this on gamestate update
     if (this._playerHand.length > 0) this.renderPlayerCards();
-    //this.renderOpponentCards();
-    //this.renderCardInPlay();
+    if (this._opponentCards.length > 0) this.renderOpponentCards();
+    this.renderCardInPlay();
   }
 
   private renderCardInPlay(): void {
+    if (!this._cardInPlay) return;
     this._stage.addChild(this._cardInPlay);
     TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
   }
@@ -237,8 +211,7 @@ export class GameComponent implements OnInit {
 
   private playCard(card: CardSprite): void {
     if (!this._gameService.isCurrentPlayer) return;
-    this._stage.removeChild(card);
-    this._stage.addChild(card);
+    this.bringSpriteToFront(card);
     TweenLite.to(card, this.GAME_SPEED, {
       x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
       onUpdate: this.render,
@@ -254,7 +227,7 @@ export class GameComponent implements OnInit {
       || card.cardModel.color == this._cardInPlay.cardModel.color) {
       this.pullCardSpriteFromPlayerCards(card);
       this._gameService.playCard(card.cardModel);
-      this.resetPlayerForNextTurn();
+      //this.resetPlayerForNextTurn();
     }
     else {
       this.renderPlayerCards();
@@ -288,6 +261,21 @@ export class GameComponent implements OnInit {
   /*
     UTILITY
   */
+
+  private sortCards(cards: CardSprite[]): CardSprite[] {
+    return cards.sort((a: CardSprite, b: CardSprite) => {
+      if (a.cardModel.id < b.cardModel.id) return -1;
+      if (a.cardModel.id > b.cardModel.id) return 1;
+      return 0;
+    });
+
+  }
+
+  private bringSpriteToFront(sprite: PIXI.Sprite): void {
+    this._stage.removeChild(sprite);
+    this._stage.addChild(sprite);
+  }
+
   private pullCardSpriteFromPlayerCards(card: CardSprite): void {
     this._playerCards = this._playerCards.filter(c => card.cardModel.id != c.cardModel.id);
   }

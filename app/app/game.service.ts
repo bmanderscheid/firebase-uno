@@ -1,5 +1,5 @@
 //imports
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { Http } from '@angular/http';
 import { FirebaseService } from '../app/firebase.service'
 import { GameState } from '../app/game-state.model'
@@ -13,7 +13,7 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class GameService {
 
-    private _currentGameState:GameState;
+    private _currentGameState: GameState;
 
     private _gameState: Observable<GameState>;
     private _gameStateSource: BehaviorSubject<GameState>;
@@ -32,13 +32,22 @@ export class GameService {
 
     init(): void {
         this._firebaseService.init();
-        this._firebaseService.playerHand.subscribe((card: CardModel) => {            
+        this._firebaseService.playerHand.subscribe((card: CardModel) => {
             if (card) this._currentGameState.hand.push(card);
             this.sendNextGameState();
         });
+        this._firebaseService.gameState.subscribe((gameState: any) => {
+            if (gameState) {
+                this._currentPlayer = gameState.currentPlayer;
+                this._currentGameState.cardInPlay = gameState.cardInPlay;
+                this._currentGameState.players = Object.keys(gameState.players)
+                    .map(key => gameState.players[key]);
+            }
+            this.sendNextGameState();
+        })
     }
 
-    private sendNextGameState():void{
+    private sendNextGameState(): void {
         this._gameStateSource.next(this._currentGameState);
     }
 
@@ -56,14 +65,10 @@ export class GameService {
         GAME ACTIONS
     */
 
-    playCard(cardInPlay: CardModel): void {
+    playCard(card: CardModel): void {
         let gameState: GameState = this._gameStateSource.value;
-        let playerHand: CardModel[] = this.removeCardFromHand(cardInPlay, gameState.hand);
-        let newPlayerHand = playerHand.reduce((o, v, i) => {
-            o[v.id] = v;
-            return o;
-        }, {});
-        this._firebaseService.playCard(cardInPlay, newPlayerHand);
+        gameState.hand = gameState.hand.filter(c => c.id != card.id);
+        this._firebaseService.playCard(card, gameState.hand.length);
     }
 
     drawCard(): void {

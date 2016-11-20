@@ -1,6 +1,5 @@
 {
     "game_1234": {
-        "currentPlayer": "lcSyk6JsAMcuDrnOIrX06vKA5MD3",
         "deck": {
             "r1": {
                 "id": "r1",
@@ -279,12 +278,13 @@
                 }
             }
         },
-        "gameState": {            
+        "gameState": {
+            "currentPlayer": "lcSyk6JsAMcuDrnOIrX06vKA5MD3",
             "cardInPlay": {
                 "id": "b0",
                 "color": "blue",
                 "rendered": false,
-                "value": 0                
+                "value": 0
             },
             "players": {
                 "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {

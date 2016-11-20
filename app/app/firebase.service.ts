@@ -20,33 +20,27 @@ export class FirebaseService {
     private _gameId: string = "game_1234";
     private _playerId: string = "lcSyk6JsAMcuDrnOIrX06vKA5MD3";
 
-    private _authenticated: Observable<boolean>;
-    private _authenticatedSource: BehaviorSubject<boolean>;
-
     private _currentPlayer: Observable<string>;
     private _currentPlayerSource: BehaviorSubject<string>;
 
-    private _moveMade: Observable<string>;
-    private _moveMadeSource: BehaviorSubject<string>;
-
     private _playerHand: Observable<CardModel>;
     private _playerHandSource: BehaviorSubject<CardModel>;
+
+    private _gameState: Observable<any>;
+    private _gameStateSource: BehaviorSubject<any>;
 
     private _newGameState: GameState;
 
 
     constructor() {
-        this._authenticatedSource = new BehaviorSubject<boolean>(false);
-        this._authenticated = this._authenticatedSource.asObservable();
-
         this._currentPlayerSource = new BehaviorSubject<string>("-1");
         this._currentPlayer = this._currentPlayerSource.asObservable();
 
-        this._moveMadeSource = new BehaviorSubject<string>("-1");
-        this._moveMade = this._moveMadeSource.asObservable();
-
         this._playerHandSource = new BehaviorSubject<CardModel>(null);
         this._playerHand = this._playerHandSource.asObservable();
+
+        this._gameStateSource = new BehaviorSubject<any>(null);
+        this._gameState = this._gameStateSource.asObservable();
 
         // move this shit?
         // synchronous
@@ -60,50 +54,17 @@ export class FirebaseService {
         firebase.initializeApp(config);
     }
 
-    loadGame():void{
-
-    }
 
     //set up the listener for player change in firebase
     init(): void {
-        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand")
-            .on('child_added', snapshot => this._playerHandSource.next(snapshot.val() as CardModel));
-        
         firebase.database().ref(this._gameId + "/gameState")
-            .on('value', snapshot => this.prepareGameState(snapshot.val()));
-    }
-
-    prepareGameState(gameState:Object):void{
-        
-    }
-
-    // this will return a proper game state class that the service can decipher
-    getGameState(): Promise<GameState> {
-        this._newGameState = new GameState();
-        return this.getHand();
-    }
-
-    getHand(): Promise<GameState> {
-        return firebase.database().ref(this._gameId + "/players/" + this._playerId)
-            .once('value')
-            .then(snapshot => this.getPublic(snapshot.val().hand as CardModel[]))
-    }
-
-    getPublic(hand: CardModel[]): Promise<GameState> {
-        // convert to array -- do this here or in game service?        
-        this._newGameState.hand = Object.keys(hand).map(key => hand[key]);
-        return firebase.database().ref(this._gameId + "/public")
-            .once('value')
-            .then(snapshot => this.completeGameState(snapshot.val()))
-    }
-
-    completeGameState(data: any): GameState {
-        this._newGameState.cardInPlay = data.cardInPlay;
-        // convert to array -- do this here or in game service?        
-        this._newGameState.players = Object.keys(data.players)
-            .map(key => data.players[key]);
-        console.log(this._newGameState);
-        return this._newGameState;
+            .on('value', snapshot => {
+                this._gameStateSource.next(snapshot.val());
+            });
+        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand")
+            .on('child_added', snapshot => {
+                this._playerHandSource.next(snapshot.val() as CardModel);
+            });
     }
 
     /* 
@@ -141,12 +102,11 @@ export class FirebaseService {
         PLAYS
     */
 
-    playCard(cardInPlay: CardModel, playerHand: Object): void {
+    playCard(card: CardModel, newHandCount: number): void {
         let update: Object = {};
-        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
-        update[this._gameId + "/public/cardInPlay"] = cardInPlay;
-        update[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = Object.keys(playerHand).length;
-
+        update[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = null;
+        update[this._gameId + "/gameState/cardInPlay"] = card;
+        update[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
         //// dev - make current player logic
         update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
             "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
@@ -154,9 +114,9 @@ export class FirebaseService {
     }
 
     // redundant with above except for card in play
-    pass(playerHand:Object):void{
+    pass(playerHand: Object): void {
         let update: Object = {};
-        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;                
+        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
 
         //// dev - make current player logic
         update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
@@ -166,23 +126,19 @@ export class FirebaseService {
 
     //GET SET
 
-    get authenticated(): Observable<boolean> {
-        return this._authenticated;
-    }
-
     get currentPlayer(): Observable<string> {
         return this._currentPlayer;
     }
 
-    get moveMade():Observable<string>{
-        return this._moveMade;
-    }
-
-    get playerHand():Observable<CardModel>{
+    get playerHand(): Observable<CardModel> {
         return this._playerHand;
     }
 
     get playerId(): string {
         return this._playerId;
+    }
+
+    get gameState(): Observable<any> {
+        return this._gameState;
     }
 }

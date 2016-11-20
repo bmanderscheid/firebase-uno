@@ -49,11 +49,9 @@ var GameComponent = (function () {
         this._opponentCards = [];
         this._gameService.init();
         this._gameService.gameState.subscribe(function (gameState) {
-            _this._currentGameState = gameState;
             _this._playerHand = gameState.hand;
-            _this.updateGame();
+            _this.updateGame(gameState);
             _this.renderGame();
-            //this._firstGameStateUpdate = false; // set to false so rendered property is honored         
         });
     };
     GameComponent.prototype.drawUI = function () {
@@ -68,39 +66,22 @@ var GameComponent = (function () {
     /*
       GAME UPDTATE
     */
-    GameComponent.prototype.updateGame = function () {
-        // card in playCard
-        // this._cardModelInPlay = this._currentGameState.cardInPlay;
-        // this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-        // this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
-        // player hand     
-        console.log(this._playerHand);
-        this.updatePlayerCards();
-        this._playerCards.sort(function (a, b) {
-            if (a.cardModel.id < b.cardModel.id)
-                return -1;
-            if (a.cardModel.id > b.cardModel.id)
-                return 1;
-            return 0;
-        });
-        // opponent hand
-        // sloppy player management.  Wanting to move on so this will do for now
-        // let opponent: PlayerModel = this._currentGameState.players
-        //   .filter(player => player.uid != this._gameService.playerId)[0];
-        // this._opponentNumCards = opponent.cardsInHand;
-        // this.updateOpponentCards();
-        // seriously flawed
-        //evaluate a force turnover after game speed is complete
-        // TweenLite.delayedCall(this.GAME_SPEED, () => {
-        //   if (this._gameService.isCurrentPlayer
-        //     && !this._canDraw
-        //     && this.isPlayPossible()) this.pass();;
-        // })
+    GameComponent.prototype.updateGame = function (gameState) {
+        if (gameState.cardInPlay)
+            this.updateCardInPlay(gameState.cardInPlay);
+        if (gameState.hand)
+            this.updatePlayerCards(gameState.hand);
+        if (gameState.players)
+            this.updateOpponentCards(gameState.players[1]); //TODO - hard coded!
     };
-    GameComponent.prototype.updatePlayerCards = function () {
+    GameComponent.prototype.updateCardInPlay = function (cardModel) {
+        this._cardInPlay = this.spawnCard(cardModel);
+        this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
+    };
+    GameComponent.prototype.updatePlayerCards = function (playerHand) {
         var _this = this;
-        for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
-            var cardModel = _a[_i];
+        for (var _i = 0, playerHand_1 = playerHand; _i < playerHand_1.length; _i++) {
+            var cardModel = playerHand_1[_i];
             // spawn card
             if (cardModel && !cardModel.spawned) {
                 var card = this.spawnCard(cardModel);
@@ -108,18 +89,18 @@ var GameComponent = (function () {
                 this._playerCards.push(card);
             }
         }
+        this._playerCards = this.sortCards(this._playerCards);
     };
-    GameComponent.prototype.updateOpponentCards = function () {
-        var cardsDifference = this._opponentNumCards - this._opponentCards.length;
-        if (this._firstGameStateUpdate)
-            this.updateOpponentAllOpponentCardsOnStart();
-        else if (cardsDifference < 0)
-            this.opponentCardPlay();
-        else if (cardsDifference > 0)
-            this.opponentDrawCard();
+    GameComponent.prototype.updateOpponentCards = function (player) {
+        var cardsDifference = player.cardsInHand - this._opponentCards.length;
+        if (this._opponentCards.length < 1)
+            this.updateOpponentAllOpponentCardsOnStart(player.cardsInHand);
+        // else
+        //   if (cardsDifference < 0) this.opponentCardPlay();
+        //   else if (cardsDifference > 0) this.opponentDrawCard();
     };
-    GameComponent.prototype.updateOpponentAllOpponentCardsOnStart = function () {
-        for (var i = 0; i < this._opponentNumCards; i++) {
+    GameComponent.prototype.updateOpponentAllOpponentCardsOnStart = function (numCards) {
+        for (var i = 0; i < numCards; i++) {
             var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
             card.anchor.set(.5, .5);
             card.position.set(100, 50);
@@ -127,7 +108,6 @@ var GameComponent = (function () {
         }
     };
     GameComponent.prototype.opponentCardPlay = function () {
-        //this._opponentCards[0].texture = this._cardInPlay.texture;
         var r = Math.floor(Math.random() * this._opponentCards.length);
         var card = this._opponentCards[r];
         this._cardInPlay.position.set(card.x, card.y);
@@ -141,7 +121,6 @@ var GameComponent = (function () {
         this._opponentCards.push(card);
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
-        console.log("spawn");
         var card = new card_sprite_1.CardSprite(cardModel);
         card.render();
         card.interactive = true;
@@ -156,10 +135,13 @@ var GameComponent = (function () {
         // possibly evaluate this on gamestate update
         if (this._playerHand.length > 0)
             this.renderPlayerCards();
-        //this.renderOpponentCards();
-        //this.renderCardInPlay();
+        if (this._opponentCards.length > 0)
+            this.renderOpponentCards();
+        this.renderCardInPlay();
     };
     GameComponent.prototype.renderCardInPlay = function () {
+        if (!this._cardInPlay)
+            return;
         this._stage.addChild(this._cardInPlay);
         TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
     };
@@ -204,8 +186,7 @@ var GameComponent = (function () {
     GameComponent.prototype.playCard = function (card) {
         if (!this._gameService.isCurrentPlayer)
             return;
-        this._stage.removeChild(card);
-        this._stage.addChild(card);
+        this.bringSpriteToFront(card);
         TweenLite.to(card, this.GAME_SPEED, {
             x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
@@ -220,7 +201,6 @@ var GameComponent = (function () {
             || card.cardModel.color == this._cardInPlay.cardModel.color) {
             this.pullCardSpriteFromPlayerCards(card);
             this._gameService.playCard(card.cardModel);
-            this.resetPlayerForNextTurn();
         }
         else {
             this.renderPlayerCards();
@@ -251,6 +231,19 @@ var GameComponent = (function () {
     /*
       UTILITY
     */
+    GameComponent.prototype.sortCards = function (cards) {
+        return cards.sort(function (a, b) {
+            if (a.cardModel.id < b.cardModel.id)
+                return -1;
+            if (a.cardModel.id > b.cardModel.id)
+                return 1;
+            return 0;
+        });
+    };
+    GameComponent.prototype.bringSpriteToFront = function (sprite) {
+        this._stage.removeChild(sprite);
+        this._stage.addChild(sprite);
+    };
     GameComponent.prototype.pullCardSpriteFromPlayerCards = function (card) {
         this._playerCards = this._playerCards.filter(function (c) { return card.cardModel.id != c.cardModel.id; });
     };

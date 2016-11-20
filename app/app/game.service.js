@@ -31,6 +31,15 @@ var GameService = (function () {
                 _this._currentGameState.hand.push(card);
             _this.sendNextGameState();
         });
+        this._firebaseService.gameState.subscribe(function (gameState) {
+            if (gameState) {
+                _this._currentPlayer = gameState.currentPlayer;
+                _this._currentGameState.cardInPlay = gameState.cardInPlay;
+                _this._currentGameState.players = Object.keys(gameState.players)
+                    .map(function (key) { return gameState.players[key]; });
+            }
+            _this.sendNextGameState();
+        });
     };
     GameService.prototype.sendNextGameState = function () {
         this._gameStateSource.next(this._currentGameState);
@@ -44,14 +53,10 @@ var GameService = (function () {
     /*
         GAME ACTIONS
     */
-    GameService.prototype.playCard = function (cardInPlay) {
+    GameService.prototype.playCard = function (card) {
         var gameState = this._gameStateSource.value;
-        var playerHand = this.removeCardFromHand(cardInPlay, gameState.hand);
-        var newPlayerHand = playerHand.reduce(function (o, v, i) {
-            o[v.id] = v;
-            return o;
-        }, {});
-        this._firebaseService.playCard(cardInPlay, newPlayerHand);
+        gameState.hand = gameState.hand.filter(function (c) { return c.id != card.id; });
+        this._firebaseService.playCard(card, gameState.hand.length);
     };
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCardForCurrentUser();
