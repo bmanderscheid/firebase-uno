@@ -72,7 +72,7 @@ var GameComponent = (function () {
         if (gameState.hand)
             this.updatePlayerCards(gameState.hand);
         if (gameState.players)
-            this.updateOpponentCards(gameState.players[1]); //TODO - hard coded!
+            this.updateOpponentCards(gameState.players[this._gameService.opponent]);
     };
     GameComponent.prototype.updateCardInPlay = function (cardModel) {
         this._cardInPlay = this.spawnCard(cardModel);
@@ -91,15 +91,17 @@ var GameComponent = (function () {
         }
         this._playerCards = this.sortCards(this._playerCards);
     };
-    GameComponent.prototype.updateOpponentCards = function (player) {
-        var cardsDifference = player.cardsInHand - this._opponentCards.length;
+    GameComponent.prototype.updateOpponentCards = function (opponent) {
+        var cardsDifference = opponent.cardsInHand - this._opponentCards.length;
         if (this._opponentCards.length < 1)
-            this.updateOpponentAllOpponentCardsOnStart(player.cardsInHand);
+            this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
+        else if (cardsDifference < 0)
+            this.opponentPlayedCard();
         // else
         //   if (cardsDifference < 0) this.opponentCardPlay();
         //   else if (cardsDifference > 0) this.opponentDrawCard();
     };
-    GameComponent.prototype.updateOpponentAllOpponentCardsOnStart = function (numCards) {
+    GameComponent.prototype.updateAllOpponentCardsOnStart = function (numCards) {
         for (var i = 0; i < numCards; i++) {
             var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
             card.anchor.set(.5, .5);
@@ -107,7 +109,7 @@ var GameComponent = (function () {
             this._opponentCards.push(card);
         }
     };
-    GameComponent.prototype.opponentCardPlay = function () {
+    GameComponent.prototype.opponentPlayedCard = function () {
         var r = Math.floor(Math.random() * this._opponentCards.length);
         var card = this._opponentCards[r];
         this._cardInPlay.position.set(card.x, card.y);
@@ -184,6 +186,7 @@ var GameComponent = (function () {
         GAME EVALUATIONS AND ACTIONS
     */
     GameComponent.prototype.playCard = function (card) {
+        console.log(this._gameService.isCurrentPlayer);
         if (!this._gameService.isCurrentPlayer)
             return;
         this.bringSpriteToFront(card);
@@ -222,7 +225,6 @@ var GameComponent = (function () {
                 || card.color == this._cardModelInPlay.color)
                 return false;
         }
-        console.log("no play possible");
         return true;
     };
     GameComponent.prototype.pass = function () {

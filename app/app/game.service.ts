@@ -4,6 +4,8 @@ import { Http } from '@angular/http';
 import { FirebaseService } from '../app/firebase.service'
 import { GameState } from '../app/game-state.model'
 import { CardModel } from '../app/card.model'
+import { PlayerModel } from '../app/player.model';
+import { GameModel } from '../app/game.model';
 
 import 'rxjs/add/operator/toPromise';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -18,9 +20,13 @@ export class GameService {
     private _gameState: Observable<GameState>;
     private _gameStateSource: BehaviorSubject<GameState>;
 
-    private _currentPlayer: string;
+    private _currentPlayerIndex: number;
+    private _game: GameModel;
 
     private _playerHand: CardModel[];
+
+    // fuck you
+    private _opponentId:string;
 
     constructor(private _firebaseService: FirebaseService) {
         this._currentGameState = new GameState();
@@ -31,34 +37,32 @@ export class GameService {
     }
 
     init(): void {
-        this._firebaseService.init();
+        // just getting getting by before dashboard
+        this._firebaseService.auth();
+        this._firebaseService.getGame()
+            .then((gameData: any) => {                
+                this._game = gameData.val() as GameModel;                                
+                this.startGame();
+            });
+    }
+
+    private startGame(): void {
         this._firebaseService.playerHand.subscribe((card: CardModel) => {
             if (card) this._currentGameState.hand.push(card);
             this.sendNextGameState();
         });
         this._firebaseService.gameState.subscribe((gameState: any) => {
             if (gameState) {
-                this._currentPlayer = gameState.currentPlayer;
+                this._currentPlayerIndex = gameState.currentPlayer;
                 this._currentGameState.cardInPlay = gameState.cardInPlay;
-                this._currentGameState.players = Object.keys(gameState.players)
-                    .map(key => gameState.players[key]);
+                this._currentGameState.players = gameState.players;
             }
             this.sendNextGameState();
-        })
+        });
     }
 
     private sendNextGameState(): void {
         this._gameStateSource.next(this._currentGameState);
-    }
-
-    private initGameService(): void {
-
-
-    }
-
-    private loadGame(): void {
-        // this._firebaseService.getGameState().then((response: GameState) =>
-        //     this._gameStateSource.next(response));
     }
 
     /*
@@ -71,8 +75,8 @@ export class GameService {
         this._firebaseService.playCard(card, gameState.hand.length);
     }
 
-    drawCard(): void {
-        this._firebaseService.drawCardForCurrentUser();
+    drawCard(): void {        
+        this._firebaseService.drawCard();
     }
 
     // player passes - but update hand so render values get update
@@ -100,15 +104,23 @@ export class GameService {
     }
 
     get isCurrentPlayer(): boolean {
-        return this._currentPlayer == this._firebaseService.playerId;
+        return this._game.players[this._currentPlayerIndex].uid == this._firebaseService.playerId;
     }
 
-    get currentPlayer(): string {
-        return this._currentPlayer;
+    get opponent(): any {        
+        return this._game.players.filter(player => player.uid != this._firebaseService.playerId)[0].uid;
+    }
+
+    get currentPlayer(): number {
+        return this._currentPlayerIndex;
     }
 
     get playerId(): string {
         return this._firebaseService.playerId;
+    }
+
+    get game(): GameModel {
+        return this._game;
     }
 
 }

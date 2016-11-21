@@ -92,7 +92,7 @@ export class GameComponent implements OnInit {
   private updateGame(gameState: GameState): void {
     if (gameState.cardInPlay) this.updateCardInPlay(gameState.cardInPlay);
     if (gameState.hand) this.updatePlayerCards(gameState.hand);
-    if (gameState.players) this.updateOpponentCards(gameState.players[1]); //TODO - hard coded!
+    if (gameState.players) this.updateOpponentCards(gameState.players[this._gameService.opponent]);
   }
 
   private updateCardInPlay(cardModel: CardModel): void {
@@ -112,15 +112,16 @@ export class GameComponent implements OnInit {
     this._playerCards = this.sortCards(this._playerCards);
   }
 
-  private updateOpponentCards(player: PlayerModel): void {
-    let cardsDifference: number = player.cardsInHand - this._opponentCards.length;
-    if (this._opponentCards.length < 1) this.updateOpponentAllOpponentCardsOnStart(player.cardsInHand);
+  private updateOpponentCards(opponent: any): void {
+    let cardsDifference: number = opponent.cardsInHand - this._opponentCards.length;
+    if (this._opponentCards.length < 1) this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
+    else if (cardsDifference < 0) this.opponentPlayedCard();
     // else
     //   if (cardsDifference < 0) this.opponentCardPlay();
     //   else if (cardsDifference > 0) this.opponentDrawCard();
   }
 
-  private updateOpponentAllOpponentCardsOnStart(numCards: number): void {
+  private updateAllOpponentCardsOnStart(numCards: number): void {
     for (let i = 0; i < numCards; i++) {
       let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
       card.anchor.set(.5, .5);
@@ -129,7 +130,7 @@ export class GameComponent implements OnInit {
     }
   }
 
-  private opponentCardPlay(): void {
+  private opponentPlayedCard(): void {
     let r: number = Math.floor(Math.random() * this._opponentCards.length);
     let card: PIXI.Sprite = this._opponentCards[r];
     this._cardInPlay.position.set(card.x, card.y);
@@ -210,6 +211,7 @@ export class GameComponent implements OnInit {
   */
 
   private playCard(card: CardSprite): void {
+    console.log(this._gameService.isCurrentPlayer);
     if (!this._gameService.isCurrentPlayer) return;
     this.bringSpriteToFront(card);
     TweenLite.to(card, this.GAME_SPEED, {
@@ -250,7 +252,6 @@ export class GameComponent implements OnInit {
       if (card.value == this._cardModelInPlay.value
         || card.color == this._cardModelInPlay.color) return false;
     }
-    console.log("no play possible");
     return true;
   }
 

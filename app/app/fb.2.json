@@ -205,81 +205,93 @@
                 "deckOrder": 37
             }
         },
-        "players": {
+        "playerHands": {
             "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
-                "hand": {
-                    "g9": {
-                        "id": "g9",
-                        "color": "green",
-                        "rendered": true,
-                        "value": 9,
-                        "deckOrder": 0
-                    },
-                    "b8": {
-                        "id": "b8",
-                        "color": "blue",
-                        "rendered": true,
-                        "value": 8,
-                        "deckOrder": 1
-                    },
-                    "g2": {
-                        "id": "g2",
-                        "color": "green",
-                        "rendered": true,
-                        "value": 2,
-                        "deckOrder": 2
-                    },
-                    "b1": {
-                        "id": "b1",
-                        "color": "blue",
-                        "rendered": true,
-                        "value": 1,
-                        "deckOrder": 3
-                    }
+                "g9": {
+                    "id": "g9",
+                    "color": "green",
+                    "rendered": true,
+                    "value": 9,
+                    "deckOrder": 0
+                },
+                "b8": {
+                    "id": "b8",
+                    "color": "blue",
+                    "rendered": true,
+                    "value": 8,
+                    "deckOrder": 1
+                },
+                "g2": {
+                    "id": "g2",
+                    "color": "green",
+                    "rendered": true,
+                    "value": 2,
+                    "deckOrder": 2
+                },
+                "b1": {
+                    "id": "b1",
+                    "color": "blue",
+                    "rendered": true,
+                    "value": 1,
+                    "deckOrder": 3
                 }
             },
             "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
-                "hand": {
-                    "r8": {
-                        "id": "r8",
-                        "color": "red",
-                        "rendered": true,
-                        "value": 8,
-                        "deckOrder": 4
-                    },
-                    "r6": {
-                        "id": "r6",
-                        "color": "red",
-                        "rendered": true,
-                        "value": 6,
-                        "deckOrder": 5
-                    },
-                    "g1": {
-                        "id": "g1",
-                        "color": "green",
-                        "rendered": true,
-                        "value": 1,
-                        "deckOrder": 6
-                    },
-                    "g5": {
-                        "id": "g5",
-                        "color": "green",
-                        "rendered": true,
-                        "value": 5,
-                        "deckOrder": 7
-                    },
-                    "b2": {
-                        "id": "b2",
-                        "color": "blue",
-                        "rendered": true,
-                        "value": 2,
-                        "deckOrder": 8
-                    }
+                "r8": {
+                    "id": "r8",
+                    "color": "red",
+                    "rendered": true,
+                    "value": 8,
+                    "deckOrder": 4
+                },
+                "r6": {
+                    "id": "r6",
+                    "color": "red",
+                    "rendered": true,
+                    "value": 6,
+                    "deckOrder": 5
+                },
+                "g1": {
+                    "id": "g1",
+                    "color": "green",
+                    "rendered": true,
+                    "value": 1,
+                    "deckOrder": 6
+                },
+                "g5": {
+                    "id": "g5",
+                    "color": "green",
+                    "rendered": true,
+                    "value": 5,
+                    "deckOrder": 7
+                },
+                "b2": {
+                    "id": "b2",
+                    "color": "blue",
+                    "rendered": true,
+                    "value": 2,
+                    "deckOrder": 8
                 }
             }
         },
+        "gameData": {
+            "title":"Might be something",
+            "date":"11242016",
+            "players": [
+                {
+                    "name":"Brad Manderscheid",
+                    "pic":"",
+                    "uid": "lcSyk6JsAMcuDrnOIrX06vKA5MD3"
+                },
+                {
+                    "name":"Zach Nelson",
+                    "pic":"",
+                    "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2"
+                }
+            ]
+        },
         "gameState": {
-            "currentPlayer": "lcSyk6JsAMcuDrnOIrX06vKA5MD3",
+            "currentPlayer": 0,
             "cardInPlay": {
                 "id": "b0",
                 "color": "blue",
@@ -287,15 +299,13 @@
                 "value": 0
             },
             "players": {
-                "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
-                    "cardsInHand": 5,
-                    "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2",
-                    "playTurn": 1
-                },
                 "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
                     "cardsInHand": 4,
-                    "uid": "lcSyk6JsAMcuDrnOIrX06vKA5MD3",
-                    "playTurn": 0
+                    "uid": "lcSyk6JsAMcuDrnOIrX06vKA5MD3"
+                },
+                "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
+                    "cardsInHand": 5,
+                    "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2"
                 }
             }
         }

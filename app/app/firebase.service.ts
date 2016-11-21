@@ -7,6 +7,7 @@ import { Observable } from 'rxjs/Observable';
 
 import { GameState } from '../app/game-state.model'
 import { CardModel } from '../app/card.model';
+import { GameModel } from '../app/game.model';
 
 //requires
 var firebase = require('firebase/app');
@@ -18,10 +19,9 @@ export class FirebaseService {
 
     //will be passed in somehow from dashboard
     private _gameId: string = "game_1234";
-    private _playerId: string = "lcSyk6JsAMcuDrnOIrX06vKA5MD3";
 
-    private _currentPlayer: Observable<string>;
-    private _currentPlayerSource: BehaviorSubject<string>;
+    // move to game service!!!
+    private _playerId: string;
 
     private _playerHand: Observable<CardModel>;
     private _playerHandSource: BehaviorSubject<CardModel>;
@@ -29,13 +29,7 @@ export class FirebaseService {
     private _gameState: Observable<any>;
     private _gameStateSource: BehaviorSubject<any>;
 
-    private _newGameState: GameState;
-
-
     constructor() {
-        this._currentPlayerSource = new BehaviorSubject<string>("-1");
-        this._currentPlayer = this._currentPlayerSource.asObservable();
-
         this._playerHandSource = new BehaviorSubject<CardModel>(null);
         this._playerHand = this._playerHandSource.asObservable();
 
@@ -54,14 +48,32 @@ export class FirebaseService {
         firebase.initializeApp(config);
     }
 
+    // should come in via dashboard / log in
+    auth(): void {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this._playerId = user.uid;
+                this.init();
+            }
+            else {
+                var provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithRedirect(provider);
+            }
+        });
+    }
 
-    //set up the listener for player change in firebase
+
+    getGame(): Promise<GameModel> {
+        return firebase.database().ref(this._gameId + "/gameData")
+            .once('value', snapshot => snapshot.val() as GameModel);
+    }
+
     init(): void {
         firebase.database().ref(this._gameId + "/gameState")
             .on('value', snapshot => {
                 this._gameStateSource.next(snapshot.val());
             });
-        firebase.database().ref(this._gameId + "/players/" + this._playerId + "/hand")
+        firebase.database().ref(this._gameId + "/playerHands/" + this._playerId)
             .on('child_added', snapshot => {
                 this._playerHandSource.next(snapshot.val() as CardModel);
             });
@@ -70,8 +82,7 @@ export class FirebaseService {
     /* 
         DRAW CARD
     */
-    drawCardForCurrentUser(): void {
-        console.log("drawing card....");
+    drawCard(): void {
         firebase.database().ref(this._gameId + "/deck")
             .once('value')
             .then(snapshot => this.updatePlayerHand(snapshot.val()));
@@ -85,17 +96,16 @@ export class FirebaseService {
             return 0;
         });
         let card: any = cards.pop();
-        card.rendered = false;
+
         let updates: Object = {};
         updates[this._gameId + "/deck/" + card.id] = null;
-        updates[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = card;
-        updates[this._gameId + "/public/move"] = new Date().toLocaleString();
+        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
 
 
         //// get actual number in hand
-        updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
+        // updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
         firebase.database().ref()
-            .update(updates, snapshot => this._currentPlayerSource.next(this._playerId));
+            .update(updates);
     }
 
     /* 
@@ -107,9 +117,7 @@ export class FirebaseService {
         update[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = null;
         update[this._gameId + "/gameState/cardInPlay"] = card;
         update[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
-        //// dev - make current player logic
-        update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
-            "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+        update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
         firebase.database().ref().update(update);
     }
 
@@ -119,16 +127,17 @@ export class FirebaseService {
         update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
 
         //// dev - make current player logic
-        update[this._gameId + "/currentPlayer"] = this._currentPlayerSource.value == "JLNl39V9SZc1ri8FXe7bVCFbyBN2" ?
-            "lcSyk6JsAMcuDrnOIrX06vKA5MD3" : "JLNl39V9SZc1ri8FXe7bVCFbyBN2";
+
+        // change plager
+
         firebase.database().ref().update(update);
     }
 
     //GET SET
 
-    get currentPlayer(): Observable<string> {
-        return this._currentPlayer;
-    }
+    // get currentPlayer(): Observable<string> {
+    //     return this._currentPlayer;
+    // }
 
     get playerHand(): Observable<CardModel> {
         return this._playerHand;
