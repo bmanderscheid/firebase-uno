@@ -231,7 +231,7 @@ export class GameComponent implements OnInit {
       || card.cardModel.color == this._cardInPlay.cardModel.color) {
       this.pullCardSpriteFromPlayerCards(card);
       this._gameService.playCard(card.cardModel);
-      //this.resetPlayerForNextTurn();
+      this.resetPlayerForNextTurn();
     }
     else {
       this.renderPlayerCards();

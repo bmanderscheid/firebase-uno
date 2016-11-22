@@ -207,6 +207,7 @@ var GameComponent = (function () {
             || card.cardModel.color == this._cardInPlay.cardModel.color) {
             this.pullCardSpriteFromPlayerCards(card);
             this._gameService.playCard(card.cardModel);
+            this.resetPlayerForNextTurn();
         }
         else {
             this.renderPlayerCards();
