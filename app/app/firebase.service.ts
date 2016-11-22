@@ -105,7 +105,13 @@ export class FirebaseService {
         //// get actual number in hand
         // updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
         firebase.database().ref()
-            .update(updates);
+            .update(updates, () => this.updatePlayerCardsInHand());
+    }
+
+    updatePlayerCardsInHand(): void {
+        let ref: any = firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId);
+        ref.once('value')
+            .then(snapshot => ref.update({ cardsInHand: snapshot.val().cardsInHand + 1 }));
     }
 
     /* 

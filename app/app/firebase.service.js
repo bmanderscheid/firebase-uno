@@ -74,6 +74,7 @@ var FirebaseService = (function () {
             .then(function (snapshot) { return _this.updatePlayerHand(snapshot.val()); });
     };
     FirebaseService.prototype.updatePlayerHand = function (deck) {
+        var _this = this;
         var cards = Object.keys(deck).map(function (key) { return deck[key]; });
         cards.sort(function (a, b) {
             if (a.deckOrder < b.deckOrder)
@@ -89,7 +90,12 @@ var FirebaseService = (function () {
         //// get actual number in hand
         // updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
         firebase.database().ref()
-            .update(updates);
+            .update(updates, function () { return _this.updatePlayerCardsInHand(); });
+    };
+    FirebaseService.prototype.updatePlayerCardsInHand = function () {
+        var ref = firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId);
+        ref.once('value')
+            .then(function (snapshot) { return ref.update({ cardsInHand: snapshot.val().cardsInHand + 1 }); });
     };
     /*
         PLAYS
