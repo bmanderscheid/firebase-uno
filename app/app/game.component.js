@@ -93,10 +93,13 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.updateOpponentCards = function (opponent) {
         var cardsDifference = opponent.cardsInHand - this._opponentCards.length;
+        console.log(cardsDifference);
         if (this._opponentCards.length < 1)
             this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
         else if (cardsDifference < 0)
             this.opponentPlayedCard();
+        else if (cardsDifference > 0)
+            this.opponentDrewCard();
         // else
         //   if (cardsDifference < 0) this.opponentCardPlay();
         //   else if (cardsDifference > 0) this.opponentDrawCard();
@@ -110,13 +113,14 @@ var GameComponent = (function () {
         }
     };
     GameComponent.prototype.opponentPlayedCard = function () {
+        console.log("opp drew card");
         var r = Math.floor(Math.random() * this._opponentCards.length);
         var card = this._opponentCards[r];
         this._cardInPlay.position.set(card.x, card.y);
         this._stage.removeChild(card);
         this._opponentCards.splice(r, 1);
     };
-    GameComponent.prototype.opponentDrawCard = function () {
+    GameComponent.prototype.opponentDrewCard = function () {
         var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
         card.anchor.set(.5, .5);
         card.position.set(this.DECK_POS.x, this.DECK_POS.y);
@@ -186,7 +190,6 @@ var GameComponent = (function () {
         GAME EVALUATIONS AND ACTIONS
     */
     GameComponent.prototype.playCard = function (card) {
-        console.log(this._gameService.isCurrentPlayer);
         if (!this._gameService.isCurrentPlayer)
             return;
         this.bringSpriteToFront(card);

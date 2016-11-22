@@ -114,8 +114,10 @@ export class GameComponent implements OnInit {
 
   private updateOpponentCards(opponent: any): void {
     let cardsDifference: number = opponent.cardsInHand - this._opponentCards.length;
+    console.log(cardsDifference);
     if (this._opponentCards.length < 1) this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
     else if (cardsDifference < 0) this.opponentPlayedCard();
+    else if (cardsDifference > 0) this.opponentDrewCard();
     // else
     //   if (cardsDifference < 0) this.opponentCardPlay();
     //   else if (cardsDifference > 0) this.opponentDrawCard();
@@ -131,6 +133,7 @@ export class GameComponent implements OnInit {
   }
 
   private opponentPlayedCard(): void {
+    console.log("opp drew card");
     let r: number = Math.floor(Math.random() * this._opponentCards.length);
     let card: PIXI.Sprite = this._opponentCards[r];
     this._cardInPlay.position.set(card.x, card.y);
@@ -138,7 +141,7 @@ export class GameComponent implements OnInit {
     this._opponentCards.splice(r, 1);
   }
 
-  private opponentDrawCard(): void {
+  private opponentDrewCard(): void {
     let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
     card.anchor.set(.5, .5);
     card.position.set(this.DECK_POS.x, this.DECK_POS.y);
@@ -211,7 +214,6 @@ export class GameComponent implements OnInit {
   */
 
   private playCard(card: CardSprite): void {
-    console.log(this._gameService.isCurrentPlayer);
     if (!this._gameService.isCurrentPlayer) return;
     this.bringSpriteToFront(card);
     TweenLite.to(card, this.GAME_SPEED, {
