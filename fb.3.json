@@ -211,6 +211,34 @@
                 "value": -1,
                 "deckOrder": 38,
                 "isWild": true
+            },
+            "draw2-red": {
+                "id": "draw2-red",
+                "color": "red",
+                "rendered": false,
+                "value": -2,
+                "deckOrder": 39                
+            },            
+            "draw2-green": {
+                "id": "draw2-green",
+                "color": "green",
+                "rendered": false,
+                "value": -2,
+                "deckOrder": 40                
+            },
+            "draw2-yellow": {
+                "id": "draw2-yellow",
+                "color": "yellow",
+                "rendered": false,
+                "value": -2,
+                "deckOrder": 41                
+            },
+            "draw2-blue": {
+                "id": "draw2-blue",
+                "color": "blue",
+                "rendered": false,
+                "value": -2,
+                "deckOrder": 42                
             }
         },
         "playerHands": {
