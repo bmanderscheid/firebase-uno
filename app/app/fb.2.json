@@ -206,7 +206,7 @@
             }
         },
         "playerHands": {
-            "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
+            "mMI6BagTRqP11P9c8lhoqsQ3Mxd2": {
                 "g9": {
                     "id": "g9",
                     "color": "green",
@@ -275,23 +275,24 @@
             }
         },
         "gameData": {
-            "title":"Might be something",
-            "date":"11242016",
+            "title": "Might be something",
+            "date": "11242016",
             "players": [
                 {
-                    "name":"Brad Manderscheid",
-                    "pic":"",
-                    "uid": "lcSyk6JsAMcuDrnOIrX06vKA5MD3"
+                    "name": "Brad Manderscheid",
+                    "pic": "",
+                    "uid": "mMI6BagTRqP11P9c8lhoqsQ3Mxd2"
                 },
                 {
-                    "name":"Zach Nelson",
-                    "pic":"",
+                    "name": "Zach Nelson",
+                    "pic": "",
                     "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2"
                 }
             ]
         },
         "gameState": {
             "currentPlayer": 0,
+            "lastMoveType": "init",
             "cardInPlay": {
                 "id": "b0",
                 "color": "blue",
@@ -299,9 +300,9 @@
                 "value": 0
             },
             "players": {
-                "lcSyk6JsAMcuDrnOIrX06vKA5MD3": {
+                "mMI6BagTRqP11P9c8lhoqsQ3Mxd2": {
                     "cardsInHand": 4,
-                    "uid": "lcSyk6JsAMcuDrnOIrX06vKA5MD3"
+                    "uid": "mMI6BagTRqP11P9c8lhoqsQ3Mxd2"
                 },
                 "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
                     "cardsInHand": 5,

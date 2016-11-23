@@ -15,47 +15,46 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class GameService {
 
-    private _currentGameState: GameState;
+    private _currentGameState: GameState; // used to build game state
 
-    private _gameState: Observable<GameState>;
+    private _gameState: Observable<GameState>; // used to shoot component the current game state
     private _gameStateSource: BehaviorSubject<GameState>;
 
     private _currentPlayerIndex: number;
-    private _game: GameModel;
-
-    private _playerHand: CardModel[];
+    private _game: GameModel; // overall game information.  Does not update
 
     // fuck you
-    private _opponentId:string;
+    private _opponentId: string;
 
     constructor(private _firebaseService: FirebaseService) {
         this._currentGameState = new GameState();
         this._currentGameState.hand = [];
         this._gameStateSource = new BehaviorSubject<GameState>(this._currentGameState);
-        this._gameState = this._gameStateSource.asObservable();
-        this._playerHand = [];
+        this._gameState = this._gameStateSource.asObservable();        
     }
 
     init(): void {
         // just getting getting by before dashboard
         this._firebaseService.auth();
         this._firebaseService.getGame()
-            .then((gameData: any) => {                
-                this._game = gameData.val() as GameModel;                                
+            .then((gameData: any) => {
+                this._game = gameData.val() as GameModel;
                 this.startGame();
             });
     }
 
     private startGame(): void {
         this._firebaseService.playerHand.subscribe((card: CardModel) => {
-            if (card) this._currentGameState.hand.push(card);
+            if (card) this._currentGameState.hand.push(card);            
             this.sendNextGameState();
         });
         this._firebaseService.gameState.subscribe((gameState: any) => {
-            if (gameState) {
-                this._currentPlayerIndex = gameState.currentPlayer;
+            if (gameState) {                
+                this._currentPlayerIndex = gameState.currentPlayer;                
                 this._currentGameState.cardInPlay = gameState.cardInPlay;
-                this._currentGameState.players = gameState.players;
+                this._currentGameState.players = gameState.players;    
+                this._currentGameState.lastMoveType = gameState.lastMoveType;                
+                console.log(this._currentGameState);
             }
             this.sendNextGameState();
         });
@@ -75,19 +74,12 @@ export class GameService {
         this._firebaseService.playCard(card, gameState.hand.length);
     }
 
-    drawCard(): void {        
+    drawCard(): void {
         this._firebaseService.drawCard();
     }
 
-    // player passes - but update hand so render values get update
     pass(): void {
-        let gameState: GameState = this._gameStateSource.value;
-        let playerHand: CardModel[] = this._gameStateSource.value.hand;
-        let newPlayerHand = playerHand.reduce((o, v, i) => {
-            o[v.id] = v;
-            return o;
-        }, {});
-        this._firebaseService.pass(newPlayerHand);
+        this._firebaseService.pass();
     }
 
     /*
@@ -107,7 +99,7 @@ export class GameService {
         return this._game.players[this._currentPlayerIndex].uid == this._firebaseService.playerId;
     }
 
-    get opponent(): any {        
+    get opponent(): any {
         return this._game.players.filter(player => player.uid != this._firebaseService.playerId)[0].uid;
     }
 

@@ -54,6 +54,7 @@ export class FirebaseService {
             if (user) {
                 this._playerId = user.uid;
                 this.init();
+
             }
             else {
                 var provider = new firebase.auth.GoogleAuthProvider();
@@ -85,10 +86,10 @@ export class FirebaseService {
     drawCard(): void {
         firebase.database().ref(this._gameId + "/deck")
             .once('value')
-            .then(snapshot => this.updatePlayerHand(snapshot.val()));
+            .then(snapshot => this.updatePlayerHandAfterDraw(snapshot.val()));
     }
 
-    updatePlayerHand(deck): void {
+    updatePlayerHandAfterDraw(deck): void {
         let cards: Object[] = Object.keys(deck).map(key => deck[key]);
         cards.sort((a: any, b: any) => {
             if (a.deckOrder < b.deckOrder) return -1;
@@ -100,10 +101,7 @@ export class FirebaseService {
         let updates: Object = {};
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
-
-
-        //// get actual number in hand
-        // updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
+        updates[this._gameId + "/gameState/lastMoveType"] = "draw";
         firebase.database().ref()
             .update(updates, () => this.updatePlayerCardsInHand());
     }
@@ -119,19 +117,19 @@ export class FirebaseService {
     */
 
     playCard(card: CardModel, newHandCount: number): void {
-        let update: Object = {};
-        update[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = null;
-        update[this._gameId + "/gameState/cardInPlay"] = card;
-        update[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
-        update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
-        firebase.database().ref().update(update);
+        let updates: Object = {};
+        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
+        updates[this._gameId + "/gameState/cardInPlay"] = card;
+        updates[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
+        updates[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
+        updates[this._gameId + "/gameState/lastMoveType"] = "play";
+        firebase.database().ref().update(updates);
     }
 
-    // redundant with above except for card in play
-    pass(playerHand: Object): void {
+    pass(): void {
         let update: Object = {};
-        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
-
+        update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
+        update[this._gameId + "/gameState/lastMoveType"] = "pass";
         //// dev - make current player logic
 
         // change plager

@@ -14,14 +14,12 @@ var card_sprite_1 = require('../app/card.sprite');
 var GameComponent = (function () {
     function GameComponent(_gameService) {
         this._gameService = _gameService;
-        //move to config(s)
+        //move to config(s)  
         this.GAME_SPEED = .5;
         this.PLAYER_REALM_Y = 640;
         this.OPPONENT_REALM_Y = 140;
         this.DISCARD_POS = { x: 600, y: 384 };
         this.DECK_POS = { x: 450, y: 384 };
-        this._firstGameStateUpdate = true;
-        this._canDraw = true;
     }
     GameComponent.prototype.ngOnInit = function () {
         this.preparePIXI();
@@ -44,14 +42,18 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.initGame = function () {
         var _this = this;
+        // draw initial UI
         this.drawUI();
+        // initialize sprite containers
         this._playerCards = [];
         this._opponentCards = [];
+        // init service and subscribe to game state changes
         this._gameService.init();
         this._gameService.gameState.subscribe(function (gameState) {
-            _this._playerHand = gameState.hand;
+            _this._canDraw = gameState.lastMoveType != "draw"; // MOVE!!
             _this.updateGame(gameState);
             _this.renderGame();
+            _this.evaluateGame(gameState);
         });
     };
     GameComponent.prototype.drawUI = function () {
@@ -89,20 +91,17 @@ var GameComponent = (function () {
                 this._playerCards.push(card);
             }
         }
+        // sort cards
         this._playerCards = this.sortCards(this._playerCards);
     };
     GameComponent.prototype.updateOpponentCards = function (opponent) {
         var cardsDifference = opponent.cardsInHand - this._opponentCards.length;
-        console.log(cardsDifference);
         if (this._opponentCards.length < 1)
             this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
         else if (cardsDifference < 0)
             this.opponentPlayedCard();
         else if (cardsDifference > 0)
             this.opponentDrewCard();
-        // else
-        //   if (cardsDifference < 0) this.opponentCardPlay();
-        //   else if (cardsDifference > 0) this.opponentDrawCard();
     };
     GameComponent.prototype.updateAllOpponentCardsOnStart = function (numCards) {
         for (var i = 0; i < numCards; i++) {
@@ -111,20 +110,6 @@ var GameComponent = (function () {
             card.position.set(100, 50);
             this._opponentCards.push(card);
         }
-    };
-    GameComponent.prototype.opponentPlayedCard = function () {
-        console.log("opp drew card");
-        var r = Math.floor(Math.random() * this._opponentCards.length);
-        var card = this._opponentCards[r];
-        this._cardInPlay.position.set(card.x, card.y);
-        this._stage.removeChild(card);
-        this._opponentCards.splice(r, 1);
-    };
-    GameComponent.prototype.opponentDrewCard = function () {
-        var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
-        card.anchor.set(.5, .5);
-        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
-        this._opponentCards.push(card);
     };
     GameComponent.prototype.spawnCard = function (cardModel) {
         var card = new card_sprite_1.CardSprite(cardModel);
@@ -139,7 +124,7 @@ var GameComponent = (function () {
     */
     GameComponent.prototype.renderGame = function () {
         // possibly evaluate this on gamestate update
-        if (this._playerHand.length > 0)
+        if (this._playerCards.length > 0)
             this.renderPlayerCards();
         if (this._opponentCards.length > 0)
             this.renderOpponentCards();
@@ -187,7 +172,7 @@ var GameComponent = (function () {
         }
     };
     /*
-        GAME EVALUATIONS AND ACTIONS
+        GAME PLAY
     */
     GameComponent.prototype.playCard = function (card) {
         if (!this._gameService.isCurrentPlayer)
@@ -213,26 +198,59 @@ var GameComponent = (function () {
             this.renderPlayerCards();
         }
     };
+    GameComponent.prototype.opponentPlayedCard = function () {
+        var r = Math.floor(Math.random() * this._opponentCards.length);
+        var card = this._opponentCards[r];
+        this._cardInPlay.position.set(card.x, card.y);
+        this._stage.removeChild(card);
+        this._opponentCards.splice(r, 1);
+    };
+    GameComponent.prototype.opponentDrewCard = function () {
+        var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+        card.anchor.set(.5, .5);
+        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+        this._opponentCards.push(card);
+    };
+    //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     GameComponent.prototype.drawCard = function () {
-        if (this._canDraw) {
+        if (this._gameService.isCurrentPlayer && this._canDraw && TweenMax.getAllTweens().length == 0) {
             this._canDraw = false;
             this._gameService.drawCard();
         }
     };
+    /*
+      GAME EVALUATIONS
+    */
+    GameComponent.prototype.evaluateGame = function (gameState) {
+        TweenLite.killTweensOf(this.evaluateLastMove);
+        TweenLite.delayedCall(1, this.evaluateLastMove, [gameState], this);
+    };
+    // TODO - move and use enum
+    GameComponent.prototype.evaluateLastMove = function (gameState) {
+        switch (gameState.lastMoveType) {
+            case "draw":
+                if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState))
+                    this.pass();
+                break;
+            default:
+                break;
+        }
+    };
+    GameComponent.prototype.isPlayPossible = function (gameState) {
+        for (var _i = 0, _a = gameState.hand; _i < _a.length; _i++) {
+            var card = _a[_i];
+            if ((card.value == gameState.cardInPlay.value
+                || card.color == gameState.cardInPlay.color))
+                return true;
+        }
+        return false;
+    };
     GameComponent.prototype.resetPlayerForNextTurn = function () {
         this._canDraw = true;
     };
-    GameComponent.prototype.isPlayPossible = function () {
-        for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
-            var card = _a[_i];
-            if (card.value == this._cardModelInPlay.value
-                || card.color == this._cardModelInPlay.color)
-                return false;
-        }
-        return true;
-    };
     GameComponent.prototype.pass = function () {
         this._gameService.pass();
+        this.resetPlayerForNextTurn();
     };
     /*
       UTILITY
@@ -253,6 +271,7 @@ var GameComponent = (function () {
     GameComponent.prototype.pullCardSpriteFromPlayerCards = function (card) {
         this._playerCards = this._playerCards.filter(function (c) { return card.cardModel.id != c.cardModel.id; });
     };
+    //update canvas
     GameComponent.prototype.render = function () {
         if (!this._renderer)
             return;
@@ -268,4 +287,10 @@ var GameComponent = (function () {
     return GameComponent;
 }());
 exports.GameComponent = GameComponent;
+var MoveType;
+(function (MoveType) {
+    MoveType[MoveType["INIT"] = 0] = "INIT";
+    MoveType[MoveType["PLAY"] = 1] = "PLAY";
+    MoveType[MoveType["DRAW"] = 2] = "DRAW";
+})(MoveType || (MoveType = {}));
 //# sourceMappingURL=game.component.js.map

@@ -4,4 +4,5 @@ export class GameState {
     players: any[];
     hand: CardModel[];
     cardInPlay: CardModel;
+    lastMoveType: string;
 }

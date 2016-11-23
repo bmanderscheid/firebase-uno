@@ -21,7 +21,6 @@ var GameService = (function () {
         this._currentGameState.hand = [];
         this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(this._currentGameState);
         this._gameState = this._gameStateSource.asObservable();
-        this._playerHand = [];
     }
     GameService.prototype.init = function () {
         var _this = this;
@@ -45,6 +44,8 @@ var GameService = (function () {
                 _this._currentPlayerIndex = gameState.currentPlayer;
                 _this._currentGameState.cardInPlay = gameState.cardInPlay;
                 _this._currentGameState.players = gameState.players;
+                _this._currentGameState.lastMoveType = gameState.lastMoveType;
+                console.log(_this._currentGameState);
             }
             _this.sendNextGameState();
         });
@@ -63,15 +64,8 @@ var GameService = (function () {
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCard();
     };
-    // player passes - but update hand so render values get update
     GameService.prototype.pass = function () {
-        var gameState = this._gameStateSource.value;
-        var playerHand = this._gameStateSource.value.hand;
-        var newPlayerHand = playerHand.reduce(function (o, v, i) {
-            o[v.id] = v;
-            return o;
-        }, {});
-        this._firebaseService.pass(newPlayerHand);
+        this._firebaseService.pass();
     };
     /*
         UTILITY

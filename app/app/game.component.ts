@@ -11,23 +11,19 @@ import { PlayerModel } from '../app/player.model';
 })
 export class GameComponent implements OnInit {
 
+  //pixi
   private _stage: PIXI.Container;
   private _renderer: PIXI.SystemRenderer;
   private _loader: PIXI.loaders.Loader;
 
-  //move to config(s)
-  private GAME_SPEED: number = .5;
+  //move to config(s)  
+  private GAME_SPEED: number = .5
   private PLAYER_REALM_Y: number = 640;
   private OPPONENT_REALM_Y: number = 140;
   private DISCARD_POS: any = { x: 600, y: 384 }
   private DECK_POS: any = { x: 450, y: 384 }
 
-  //game state  
-  private _playerHand: CardModel[];
-  private _cardModelInPlay: CardModel;
-  private _opponentNumCards: number;
-
-  private _firstGameStateUpdate: boolean; // render all cards on first load
+  //game play
   private _canDraw: boolean;
 
   //sprites
@@ -37,10 +33,7 @@ export class GameComponent implements OnInit {
 
   private _cardInPlay: CardSprite;
 
-  constructor(private _gameService: GameService) {
-    this._firstGameStateUpdate = true;
-    this._canDraw = true;
-  }
+  constructor(private _gameService: GameService) { }
 
   ngOnInit() {
     this.preparePIXI();
@@ -65,15 +58,21 @@ export class GameComponent implements OnInit {
   }
 
   private initGame(): void {
+    // draw initial UI
     this.drawUI();
+
+    // initialize sprite containers
     this._playerCards = [];
     this._opponentCards = [];
+
+    // init service and subscribe to game state changes
     this._gameService.init();
     this._gameService.gameState.subscribe((gameState: GameState) => {
-      this._playerHand = gameState.hand;
+      this._canDraw = gameState.lastMoveType != "draw"; // MOVE!!
       this.updateGame(gameState);
       this.renderGame();
-    })
+      this.evaluateGame(gameState);
+    });
   }
 
   private drawUI(): void {
@@ -109,18 +108,15 @@ export class GameComponent implements OnInit {
         this._playerCards.push(card);
       }
     }
+    // sort cards
     this._playerCards = this.sortCards(this._playerCards);
   }
 
   private updateOpponentCards(opponent: any): void {
     let cardsDifference: number = opponent.cardsInHand - this._opponentCards.length;
-    console.log(cardsDifference);
     if (this._opponentCards.length < 1) this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
     else if (cardsDifference < 0) this.opponentPlayedCard();
     else if (cardsDifference > 0) this.opponentDrewCard();
-    // else
-    //   if (cardsDifference < 0) this.opponentCardPlay();
-    //   else if (cardsDifference > 0) this.opponentDrawCard();
   }
 
   private updateAllOpponentCardsOnStart(numCards: number): void {
@@ -130,22 +126,6 @@ export class GameComponent implements OnInit {
       card.position.set(100, 50);
       this._opponentCards.push(card);
     }
-  }
-
-  private opponentPlayedCard(): void {
-    console.log("opp drew card");
-    let r: number = Math.floor(Math.random() * this._opponentCards.length);
-    let card: PIXI.Sprite = this._opponentCards[r];
-    this._cardInPlay.position.set(card.x, card.y);
-    this._stage.removeChild(card);
-    this._opponentCards.splice(r, 1);
-  }
-
-  private opponentDrewCard(): void {
-    let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
-    card.anchor.set(.5, .5);
-    card.position.set(this.DECK_POS.x, this.DECK_POS.y);
-    this._opponentCards.push(card);
   }
 
   private spawnCard(cardModel): CardSprite {
@@ -163,7 +143,7 @@ export class GameComponent implements OnInit {
 
   private renderGame(): void {
     // possibly evaluate this on gamestate update
-    if (this._playerHand.length > 0) this.renderPlayerCards();
+    if (this._playerCards.length > 0) this.renderPlayerCards();
     if (this._opponentCards.length > 0) this.renderOpponentCards();
     this.renderCardInPlay();
   }
@@ -210,7 +190,7 @@ export class GameComponent implements OnInit {
   }
 
   /*   
-      GAME EVALUATIONS AND ACTIONS    
+      GAME PLAY    
   */
 
   private playCard(card: CardSprite): void {
@@ -238,27 +218,64 @@ export class GameComponent implements OnInit {
     }
   }
 
+  private opponentPlayedCard(): void {
+    let r: number = Math.floor(Math.random() * this._opponentCards.length);
+    let card: PIXI.Sprite = this._opponentCards[r];
+    this._cardInPlay.position.set(card.x, card.y);
+    this._stage.removeChild(card);
+    this._opponentCards.splice(r, 1);
+  }
+
+  private opponentDrewCard(): void {
+    let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+    card.anchor.set(.5, .5);
+    card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+    this._opponentCards.push(card);
+  }
+
+  //TODO -using current tween list to determine if a move can be made.  Use more or not at all
   private drawCard(): void {
-    if (this._canDraw) {
+    if (this._gameService.isCurrentPlayer && this._canDraw && TweenMax.getAllTweens().length == 0) {
       this._canDraw = false;
       this._gameService.drawCard();
     }
+  }
+
+  /* 
+    GAME EVALUATIONS
+  */
+
+  private evaluateGame(gameState: GameState): void {
+    TweenLite.killTweensOf(this.evaluateLastMove);
+    TweenLite.delayedCall(1, this.evaluateLastMove, [gameState], this);
+  }
+
+  // TODO - move and use enum
+  private evaluateLastMove(gameState: GameState): void {
+    switch (gameState.lastMoveType) {
+      case "draw":
+        if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState)) this.pass();
+        break;
+      default:
+        break;
+    }
+  }
+
+  private isPlayPossible(gameState: any): boolean {
+    for (let card of gameState.hand) {
+      if ((card.value == gameState.cardInPlay.value
+        || card.color == gameState.cardInPlay.color)) return true;
+    }
+    return false;
   }
 
   private resetPlayerForNextTurn(): void {
     this._canDraw = true;
   }
 
-  private isPlayPossible(): boolean {
-    for (let card of this._playerHand) {
-      if (card.value == this._cardModelInPlay.value
-        || card.color == this._cardModelInPlay.color) return false;
-    }
-    return true;
-  }
-
   private pass(): void {
     this._gameService.pass();
+    this.resetPlayerForNextTurn();
   }
 
   /*
@@ -283,9 +300,16 @@ export class GameComponent implements OnInit {
     this._playerCards = this._playerCards.filter(c => card.cardModel.id != c.cardModel.id);
   }
 
+  //update canvas
   private render(): void {
     if (!this._renderer) return;
     this._renderer.render(this._stage);
   }
 
+}
+
+enum MoveType {
+  INIT,
+  PLAY,
+  DRAW
 }

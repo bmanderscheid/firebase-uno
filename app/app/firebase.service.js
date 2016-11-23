@@ -71,9 +71,9 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.database().ref(this._gameId + "/deck")
             .once('value')
-            .then(function (snapshot) { return _this.updatePlayerHand(snapshot.val()); });
+            .then(function (snapshot) { return _this.updatePlayerHandAfterDraw(snapshot.val()); });
     };
-    FirebaseService.prototype.updatePlayerHand = function (deck) {
+    FirebaseService.prototype.updatePlayerHandAfterDraw = function (deck) {
         var _this = this;
         var cards = Object.keys(deck).map(function (key) { return deck[key]; });
         cards.sort(function (a, b) {
@@ -87,8 +87,7 @@ var FirebaseService = (function () {
         var updates = {};
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
-        //// get actual number in hand
-        // updates[this._gameId + "/public/players/" + this._playerId + "/cardsInHand"] = 5;
+        updates[this._gameId + "/gameState/lastMoveType"] = "draw";
         firebase.database().ref()
             .update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
@@ -101,17 +100,18 @@ var FirebaseService = (function () {
         PLAYS
     */
     FirebaseService.prototype.playCard = function (card, newHandCount) {
-        var update = {};
-        update[this._gameId + "/players/" + this._playerId + "/hand/" + card.id] = null;
-        update[this._gameId + "/gameState/cardInPlay"] = card;
-        update[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
-        update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
-        firebase.database().ref().update(update);
+        var updates = {};
+        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
+        updates[this._gameId + "/gameState/cardInPlay"] = card;
+        updates[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
+        updates[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
+        updates[this._gameId + "/gameState/lastMoveType"] = "play";
+        firebase.database().ref().update(updates);
     };
-    // redundant with above except for card in play
-    FirebaseService.prototype.pass = function (playerHand) {
+    FirebaseService.prototype.pass = function () {
         var update = {};
-        update[this._gameId + "/players/" + this._playerId + "/hand"] = playerHand;
+        update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
+        update[this._gameId + "/gameState/lastMoveType"] = "pass";
         //// dev - make current player logic
         // change plager
         firebase.database().ref().update(update);
