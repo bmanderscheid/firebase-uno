@@ -20,6 +20,7 @@ var GameComponent = (function () {
         this.OPPONENT_REALM_Y = 140;
         this.DISCARD_POS = { x: 600, y: 384 };
         this.DECK_POS = { x: 450, y: 384 };
+        this._showColorPicker = false;
     }
     GameComponent.prototype.ngOnInit = function () {
         this.preparePIXI();
@@ -87,7 +88,7 @@ var GameComponent = (function () {
             // spawn card
             if (cardModel && !cardModel.spawned) {
                 var card = this.spawnCard(cardModel);
-                card.on("mousedown", function (e) { return _this.playCard(e.target); });
+                card.on("mousedown", function (e) { return _this.cardSelected(e.target); });
                 this._playerCards.push(card);
             }
         }
@@ -174,10 +175,25 @@ var GameComponent = (function () {
     /*
         GAME PLAY
     */
-    GameComponent.prototype.playCard = function (card) {
+    GameComponent.prototype.cardSelected = function (card) {
         if (!this._gameService.isCurrentPlayer)
             return;
         this.bringSpriteToFront(card);
+        if (card.cardModel.id == "wild") {
+            this._currentWildCard = card;
+            this._showColorPicker = true;
+        }
+        else {
+            this.playCard(card);
+        }
+    };
+    GameComponent.prototype.colorPickerClicked = function (color) {
+        this._currentWildCard.updateForWild(color);
+        this._showColorPicker = false;
+        this.playCard(this._currentWildCard);
+        this._currentWildCard = null;
+    };
+    GameComponent.prototype.playCard = function (card) {
         TweenLite.to(card, this.GAME_SPEED, {
             x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
@@ -189,7 +205,7 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.evaluatePlayedCard = function (card) {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
-            || card.cardModel.color == this._cardInPlay.cardModel.color) {
+            || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
             this.pullCardSpriteFromPlayerCards(card);
             this._gameService.playCard(card.cardModel);
             this.resetPlayerForNextTurn();
@@ -280,7 +296,7 @@ var GameComponent = (function () {
     GameComponent = __decorate([
         core_1.Component({
             selector: 'game',
-            template: '<div style="position:absolute">CURRENT PLAYER: {{_gameService.currentPlayer}}</div><div id="stage"></div>'
+            templateUrl: './app/game.component.html'
         }), 
         __metadata('design:paramtypes', [game_service_1.GameService])
     ], GameComponent);

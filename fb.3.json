@@ -203,6 +203,14 @@
                 "rendered": false,
                 "value": 7,
                 "deckOrder": 37
+            },
+            "wild": {
+                "id": "wild",
+                "color": "",
+                "rendered": false,
+                "value": -1,
+                "deckOrder": 38,
+                "isWild": true
             }
         },
         "playerHands": {

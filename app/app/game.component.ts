@@ -7,7 +7,7 @@ import { PlayerModel } from '../app/player.model';
 
 @Component({
   selector: 'game',
-  template: '<div style="position:absolute">CURRENT PLAYER: {{_gameService.currentPlayer}}</div><div id="stage"></div>'
+  templateUrl: './app/game.component.html'
 })
 export class GameComponent implements OnInit {
 
@@ -25,6 +25,7 @@ export class GameComponent implements OnInit {
 
   //game play
   private _canDraw: boolean;
+  private _currentWildCard: CardSprite;
 
   //sprites
   private _playerCards: CardSprite[];
@@ -33,7 +34,12 @@ export class GameComponent implements OnInit {
 
   private _cardInPlay: CardSprite;
 
-  constructor(private _gameService: GameService) { }
+  //dom
+  private _showColorPicker: boolean;
+
+  constructor(private _gameService: GameService) {
+    this._showColorPicker = false;
+  }
 
   ngOnInit() {
     this.preparePIXI();
@@ -104,7 +110,7 @@ export class GameComponent implements OnInit {
       // spawn card
       if (cardModel && !cardModel.spawned) {
         let card: CardSprite = this.spawnCard(cardModel);
-        card.on("mousedown", (e) => this.playCard(e.target));
+        card.on("mousedown", (e) => this.cardSelected(e.target));
         this._playerCards.push(card);
       }
     }
@@ -193,9 +199,26 @@ export class GameComponent implements OnInit {
       GAME PLAY    
   */
 
-  private playCard(card: CardSprite): void {
+  private cardSelected(card: CardSprite): void {
     if (!this._gameService.isCurrentPlayer) return;
     this.bringSpriteToFront(card);
+    if (card.cardModel.id == "wild") { // use enum
+      this._currentWildCard = card;
+      this._showColorPicker = true;
+    }
+    else {
+      this.playCard(card);
+    }
+  }
+
+  private colorPickerClicked(color: string): void {
+    this._currentWildCard.updateForWild(color);
+    this._showColorPicker = false;
+    this.playCard(this._currentWildCard);
+    this._currentWildCard = null;
+  }
+
+  private playCard(card): void {
     TweenLite.to(card, this.GAME_SPEED, {
       x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
       onUpdate: this.render,
@@ -208,7 +231,7 @@ export class GameComponent implements OnInit {
 
   private evaluatePlayedCard(card: CardSprite): void {
     if (card.cardModel.value == this._cardInPlay.cardModel.value
-      || card.cardModel.color == this._cardInPlay.cardModel.color) {
+      || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
       this.pullCardSpriteFromPlayerCards(card);
       this._gameService.playCard(card.cardModel);
       this.resetPlayerForNextTurn();

@@ -15,6 +15,11 @@ var CardSprite = (function (_super) {
         this.cardModel.spawned = true;
         this.texture = PIXI.Texture.fromFrame(this._cardModel.id + ".png");
     };
+    CardSprite.prototype.updateForWild = function (color) {
+        this.cardModel.color = color;
+        this.cardModel.id = "wild-" + color;
+        this.texture = PIXI.Texture.fromFrame("wild-" + color + ".png");
+    };
     Object.defineProperty(CardSprite.prototype, "cardModel", {
         get: function () {
             return this._cardModel;

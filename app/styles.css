@@ -1,0 +1,39 @@
+body{
+    background-color: darkgray;
+}
+
+#wrapper{
+    width:1024px;
+    height:768px;
+    position:absolute;
+}
+
+#colorPicker{
+    position: absolute;
+    width: 150px;
+    bottom: 0;
+}
+
+.color-chip{
+    width: 30px;
+    height: 30px;
+    float:left;
+    border: black solid 1px;
+    margin-left: 3px;
+}
+
+.color-chip-blue{
+    background-color: blue;
+}
+
+.color-chip-red{
+    background-color: red;
+}
+
+.color-chip-green{
+    background-color: green;
+}
+
+.color-chip-yellow{
+    background-color: yellow;
+}

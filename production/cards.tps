@@ -36,7 +36,7 @@
         <key>dpi</key>
         <uint>72</uint>
         <key>dataFormat</key>
-        <string>easeljs</string>
+        <string>pixijs</string>
         <key>textureFileName</key>
         <filename></filename>
         <key>flipPVR</key>
@@ -144,6 +144,11 @@
         </struct>
         <key>dataFileNames</key>
         <map type="GFileNameMap">
+            <key>data</key>
+            <struct type="DataFile">
+                <key>name</key>
+                <filename>../app/assets/cards.json</filename>
+            </struct>
             <key>json</key>
             <struct type="DataFile">
                 <key>name</key>
@@ -172,7 +177,7 @@
         <key>globalSpriteSettings</key>
         <struct type="SpriteSettings">
             <key>scale</key>
-            <double>0.41667</double>
+            <double>1</double>
             <key>scaleMode</key>
             <enum type="ScaleMode">Smooth</enum>
             <key>extrude</key>
