@@ -24,8 +24,6 @@ var FirebaseService = (function () {
         this._playerHand = this._playerHandSource.asObservable();
         this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(null);
         this._gameState = this._gameStateSource.asObservable();
-        // move this shit?
-        // synchronous
         var config = {
             apiKey: "AIzaSyBWteIXPmEyjcpELIukCD7ZVaE5coXoMYI",
             authDomain: "uno-card-game-7dbd0.firebaseapp.com",
@@ -40,8 +38,11 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.auth().onAuthStateChanged(function (user) {
             if (user) {
-                _this._playerId = user.uid;
-                _this.init();
+                console.log("auth changed, user in");
+                if (!_this._playerId) {
+                    _this._playerId = user.uid;
+                    _this.init();
+                }
             }
             else {
                 var provider = new firebase.auth.GoogleAuthProvider();
@@ -67,22 +68,24 @@ var FirebaseService = (function () {
     /*
         DRAW CARD
     */
+    FirebaseService.prototype.getDeck = function () {
+        return firebase.database().ref(this._gameId + "/deck")
+            .once('value', function (snapshot) { return snapshot; });
+    };
     FirebaseService.prototype.drawCard = function () {
         var _this = this;
-        firebase.database().ref(this._gameId + "/deck")
-            .once('value')
+        this.getDeck()
             .then(function (snapshot) { return _this.updatePlayerHandAfterDraw(snapshot.val()); });
+    };
+    FirebaseService.prototype.drawMultipleCards = function (numCards) {
+        var _this = this;
+        this.getDeck()
+            .then(function (snapshot) { return _this.updatePlayersHandAfterMultipleDraw(snapshot.val(), numCards); });
     };
     FirebaseService.prototype.updatePlayerHandAfterDraw = function (deck) {
         var _this = this;
-        var cards = Object.keys(deck).map(function (key) { return deck[key]; });
-        cards.sort(function (a, b) {
-            if (a.deckOrder < b.deckOrder)
-                return -1;
-            if (a.deckOrder > b.deckOrder)
-                return 1;
-            return 0;
-        });
+        var cards = Object.keys(deck).map(function (key) { return deck[key]; }); // turn deck into array
+        cards = this.sortCards(cards); // order array by deck order
         var card = cards.pop();
         var updates = {};
         updates[this._gameId + "/deck/" + card.id] = null;
@@ -91,36 +94,61 @@ var FirebaseService = (function () {
         firebase.database().ref()
             .update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
-    FirebaseService.prototype.updatePlayerCardsInHand = function () {
-        var ref = firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId);
-        ref.once('value')
-            .then(function (snapshot) { return ref.update({ cardsInHand: snapshot.val().cardsInHand + 1 }); });
+    FirebaseService.prototype.updatePlayersHandAfterMultipleDraw = function (deck, numCards) {
+        var _this = this;
+        var cards = Object.keys(deck).map(function (key) { return deck[key]; }); // turn deck into array
+        cards = this.sortCards(cards); // order array by deck order
+        var updates = {};
+        for (var i = 0; i < numCards; i++) {
+            var card = cards.pop();
+            updates[this._gameId + "/deck/" + card.id] = null;
+            updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
+        }
+        updates[this._gameId + "/gameState/lastMoveType"] = "play";
+        firebase.database().ref()
+            .update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
     /*
         PLAYS
     */
     FirebaseService.prototype.playCard = function (card, newHandCount) {
+        var _this = this;
+        var moveType = card.opponentDraw ? "draw" + card.opponentDraw : "play";
         var updates = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
         updates[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
         updates[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
-        updates[this._gameId + "/gameState/lastMoveType"] = "play";
-        firebase.database().ref().update(updates);
+        updates[this._gameId + "/gameState/lastMoveType"] = moveType;
+        firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
     FirebaseService.prototype.pass = function () {
         var update = {};
         update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
         update[this._gameId + "/gameState/lastMoveType"] = "pass";
-        //// dev - make current player logic
-        // change plager
         firebase.database().ref().update(update);
+    };
+    FirebaseService.prototype.updatePlayerCardsInHand = function () {
+        var _this = this;
+        var ref = firebase.database().ref(this._gameId + "/playerHands/" + this._playerId);
+        ref.once('value')
+            .then(function (snapshot) {
+            return firebase.database().ref(_this._gameId + "/gameState/players/" + _this._playerId)
+                .update({ cardsInHand: Object.keys(snapshot.val()).length });
+        });
+    };
+    // UTILITY
+    FirebaseService.prototype.sortCards = function (cards) {
+        return cards.sort(function (a, b) {
+            if (a.deckOrder < b.deckOrder)
+                return -1;
+            if (a.deckOrder > b.deckOrder)
+                return 1;
+            return 0;
+        });
     };
     Object.defineProperty(FirebaseService.prototype, "playerHand", {
         //GET SET
-        // get currentPlayer(): Observable<string> {
-        //     return this._currentPlayer;
-        // }
         get: function () {
             return this._playerHand;
         },

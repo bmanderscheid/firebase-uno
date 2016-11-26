@@ -10,15 +10,19 @@ export class CardSprite extends PIXI.Sprite {
     }
 
     render(): void {
-        this.cardModel.rendered = true;
         this.cardModel.spawned = true;
-        this.texture = PIXI.Texture.fromFrame(this._cardModel.id + ".png");
+        if (this._cardModel.isWild && this._cardModel.color)
+            if (this._cardModel.opponentDraw)
+                this.texture = PIXI.Texture.fromFrame("wild-draw4-" + this._cardModel.color + ".png");
+            else this.texture = PIXI.Texture.fromFrame("wild-" + this._cardModel.color + ".png");
+        else this.texture = PIXI.Texture.fromFrame(this._cardModel.id + ".png");
     }
 
     updateForWild(color: string): void {
         this.cardModel.color = color;
-        this.cardModel.id = "wild-" + color;
-        this.texture = PIXI.Texture.fromFrame("wild-" + color + ".png");
+        if (this._cardModel.opponentDraw)
+            this.texture = PIXI.Texture.fromFrame("wild-draw4-" + this._cardModel.color + ".png");
+        else this.texture = PIXI.Texture.fromFrame("wild-" + this._cardModel.color + ".png");
     }
 
     get cardModel(): CardModel {

@@ -4,241 +4,219 @@
             "r1": {
                 "id": "r1",
                 "color": "red",
-                "rendered": false,
                 "value": 1,
                 "deckOrder": 9
             },
             "g8": {
                 "id": "g8",
                 "color": "green",
-                "rendered": false,
                 "value": 8,
                 "deckOrder": 10
             },
             "y2": {
                 "id": "y2",
                 "color": "yellow",
-                "rendered": false,
                 "value": 2,
                 "deckOrder": 11
             },
             "r2": {
                 "id": "r2",
                 "color": "red",
-                "rendered": false,
                 "value": 2,
                 "deckOrder": 12
             },
             "r4": {
                 "id": "r4",
                 "color": "red",
-                "rendered": false,
                 "value": 4,
                 "deckOrder": 13
             },
             "b6": {
                 "id": "b6",
                 "color": "blue",
-                "rendered": false,
                 "value": 6,
                 "deckOrder": 14
             },
             "y1": {
                 "id": "y1",
                 "color": "yellow",
-                "rendered": false,
                 "value": 1,
                 "deckOrder": 15
             },
             "y6": {
                 "id": "y6",
                 "color": "yellow",
-                "rendered": false,
                 "value": 6,
                 "deckOrder": 16
             },
             "r3": {
                 "id": "r3",
                 "color": "red",
-                "rendered": false,
                 "value": 3,
                 "deckOrder": 17
             },
             "y3": {
                 "id": "y3",
                 "color": "yellow",
-                "rendered": false,
                 "value": 3,
                 "deckOrder": 18
             },
             "g7": {
                 "id": "g7",
                 "color": "green",
-                "rendered": false,
                 "value": 7,
                 "deckOrder": 19
             },
             "y7": {
                 "id": "y7",
                 "color": "yellow",
-                "rendered": false,
                 "value": 7,
                 "deckOrder": 20
             },
             "g3": {
                 "id": "g3",
                 "color": "green",
-                "rendered": false,
                 "value": 3,
                 "deckOrder": 21
             },
             "y5": {
                 "id": "y5",
                 "color": "yellow",
-                "rendered": false,
                 "value": 5,
                 "deckOrder": 22
             },
             "g4": {
                 "id": "g4",
                 "color": "green",
-                "rendered": false,
                 "value": 4,
                 "deckOrder": 23
             },
             "y4": {
                 "id": "y4",
                 "color": "yellow",
-                "rendered": false,
                 "value": 4,
                 "deckOrder": 24
             },
             "b4": {
                 "id": "b4",
                 "color": "blue",
-                "rendered": false,
                 "value": 4,
                 "deckOrder": 25
             },
             "g0": {
                 "id": "g0",
                 "color": "green",
-                "rendered": false,
                 "value": 0,
                 "deckOrder": 26
             },
             "y0": {
                 "id": "y0",
                 "color": "yellow",
-                "rendered": false,
                 "value": 0,
                 "deckOrder": 27
             },
             "r9": {
                 "id": "r9",
                 "color": "red",
-                "rendered": false,
                 "value": 9,
                 "deckOrder": 28
             },
             "b5": {
                 "id": "b5",
                 "color": "blue",
-                "rendered": false,
                 "value": 5,
                 "deckOrder": 29
             },
             "b9": {
                 "id": "b9",
                 "color": "blue",
-                "rendered": false,
                 "value": 9,
                 "deckOrder": 30
             },
             "b3": {
                 "id": "b3",
                 "color": "blue",
-                "rendered": false,
                 "value": 3,
                 "deckOrder": 31
             },
             "r5": {
                 "id": "r5",
                 "color": "red",
-                "rendered": false,
                 "value": 5,
                 "deckOrder": 32
             },
             "r0": {
                 "id": "r0",
                 "color": "red",
-                "rendered": false,
                 "value": 0,
                 "deckOrder": 33
             },
             "r7": {
                 "id": "r7",
                 "color": "red",
-                "rendered": false,
                 "value": 7,
                 "deckOrder": 34
             },
             "y9": {
                 "id": "y9",
                 "color": "yellow",
-                "rendered": false,
                 "value": 9,
                 "deckOrder": 35
             },
             "y8": {
                 "id": "y8",
                 "color": "yellow",
-                "rendered": false,
                 "value": 8,
                 "deckOrder": 36
             },
             "b7": {
                 "id": "b7",
                 "color": "blue",
-                "rendered": false,
                 "value": 7,
                 "deckOrder": 37
             },
-            "wild": {
-                "id": "wild",
+            "wild1": {
+                "id": "wild1",
                 "color": "",
-                "rendered": false,
                 "value": -1,
                 "deckOrder": 38,
+                "isWild": true
+            },
+            "wild-draw4": {
+                "id": "wild-draw4",
+                "color": "",
+                "value": -1,
+                "deckOrder": 39,
+                "opponentDraw": 4,
                 "isWild": true
             },
             "draw2-red": {
                 "id": "draw2-red",
                 "color": "red",
-                "rendered": false,
                 "value": -2,
-                "deckOrder": 39                
-            },            
+                "opponentDraw": 2,
+                "deckOrder": 40
+            },
             "draw2-green": {
                 "id": "draw2-green",
                 "color": "green",
-                "rendered": false,
                 "value": -2,
-                "deckOrder": 40                
+                "opponentDraw": 2,
+                "deckOrder": 41
             },
             "draw2-yellow": {
                 "id": "draw2-yellow",
                 "color": "yellow",
-                "rendered": false,
                 "value": -2,
-                "deckOrder": 41                
+                "opponentDraw": 2,
+                "deckOrder": 42
             },
             "draw2-blue": {
                 "id": "draw2-blue",
                 "color": "blue",
-                "rendered": false,
                 "value": -2,
-                "deckOrder": 42                
+                "opponentDraw": 2,
+                "deckOrder": 43
             }
         },
         "playerHands": {
@@ -332,7 +310,6 @@
             "cardInPlay": {
                 "id": "b0",
                 "color": "blue",
-                "rendered": false,
                 "value": 0
             },
             "players": {

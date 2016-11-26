@@ -74,7 +74,7 @@ export class GameComponent implements OnInit {
     // init service and subscribe to game state changes
     this._gameService.init();
     this._gameService.gameState.subscribe((gameState: GameState) => {
-      this._canDraw = gameState.lastMoveType != "draw"; // MOVE!!
+      this._canDraw = gameState.lastMoveType != "draw"; // this move type is only to check for pass -- reconsider
       this.updateGame(gameState);
       this.renderGame();
       this.evaluateGame(gameState);
@@ -100,7 +100,7 @@ export class GameComponent implements OnInit {
     if (gameState.players) this.updateOpponentCards(gameState.players[this._gameService.opponent]);
   }
 
-  private updateCardInPlay(cardModel: CardModel): void {
+  private updateCardInPlay(cardModel: CardModel): void {    
     this._cardInPlay = this.spawnCard(cardModel);
     this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
   }
@@ -122,7 +122,7 @@ export class GameComponent implements OnInit {
     let cardsDifference: number = opponent.cardsInHand - this._opponentCards.length;
     if (this._opponentCards.length < 1) this.updateAllOpponentCardsOnStart(opponent.cardsInHand);
     else if (cardsDifference < 0) this.opponentPlayedCard();
-    else if (cardsDifference > 0) this.opponentDrewCard();
+    else if (cardsDifference > 0) this.opponentDrewCard(cardsDifference);
   }
 
   private updateAllOpponentCardsOnStart(numCards: number): void {
@@ -156,6 +156,7 @@ export class GameComponent implements OnInit {
 
   private renderCardInPlay(): void {
     if (!this._cardInPlay) return;
+    console.log("update card in play");
     this._stage.addChild(this._cardInPlay);
     TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
   }
@@ -202,7 +203,7 @@ export class GameComponent implements OnInit {
   private cardSelected(card: CardSprite): void {
     if (!this._gameService.isCurrentPlayer) return;
     this.bringSpriteToFront(card);
-    if (card.cardModel.id == "wild") { // use enum
+    if (card.cardModel.isWild) { // use enum
       this._currentWildCard = card;
       this._showColorPicker = true;
     }
@@ -249,11 +250,13 @@ export class GameComponent implements OnInit {
     this._opponentCards.splice(r, 1);
   }
 
-  private opponentDrewCard(): void {
-    let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
-    card.anchor.set(.5, .5);
-    card.position.set(this.DECK_POS.x, this.DECK_POS.y);
-    this._opponentCards.push(card);
+  private opponentDrewCard(numCards: number): void {
+    for (let i = 0; i < numCards; i++) {
+      let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+      card.anchor.set(.5, .5);
+      card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+      this._opponentCards.push(card);
+    }
   }
 
   //TODO -using current tween list to determine if a move can be made.  Use more or not at all
@@ -270,7 +273,7 @@ export class GameComponent implements OnInit {
 
   private evaluateGame(gameState: GameState): void {
     TweenLite.killTweensOf(this.evaluateLastMove);
-    TweenLite.delayedCall(1, this.evaluateLastMove, [gameState], this);
+    TweenLite.delayedCall(.3, this.evaluateLastMove, [gameState], this);
   }
 
   // TODO - move and use enum
@@ -279,9 +282,19 @@ export class GameComponent implements OnInit {
       case "draw":
         if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState)) this.pass();
         break;
+      case "draw2":
+        if (this._gameService.isCurrentPlayer) this.drawMultipleCards(2);
+        break;
+      case "draw4":
+        if (this._gameService.isCurrentPlayer) this.drawMultipleCards(4);
+        break;
       default:
         break;
     }
+  }
+
+  private drawMultipleCards(numCards: number): void {
+    this._gameService.drawMultipleCards(numCards);
   }
 
   private isPlayPossible(gameState: any): boolean {

@@ -45,7 +45,6 @@ var GameService = (function () {
                 _this._currentGameState.cardInPlay = gameState.cardInPlay;
                 _this._currentGameState.players = gameState.players;
                 _this._currentGameState.lastMoveType = gameState.lastMoveType;
-                console.log(_this._currentGameState);
             }
             _this.sendNextGameState();
         });
@@ -57,12 +56,13 @@ var GameService = (function () {
         GAME ACTIONS
     */
     GameService.prototype.playCard = function (card) {
-        var gameState = this._gameStateSource.value;
-        gameState.hand = gameState.hand.filter(function (c) { return c.id != card.id; });
-        this._firebaseService.playCard(card, gameState.hand.length);
+        this._firebaseService.playCard(card, this._gameStateSource.value.hand.length);
     };
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCard();
+    };
+    GameService.prototype.drawMultipleCards = function (numCards) {
+        this._firebaseService.drawMultipleCards(numCards);
     };
     GameService.prototype.pass = function () {
         this._firebaseService.pass();
@@ -99,20 +99,6 @@ var GameService = (function () {
     Object.defineProperty(GameService.prototype, "currentPlayer", {
         get: function () {
             return this._currentPlayerIndex;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GameService.prototype, "playerId", {
-        get: function () {
-            return this._firebaseService.playerId;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(GameService.prototype, "game", {
-        get: function () {
-            return this._game;
         },
         enumerable: true,
         configurable: true

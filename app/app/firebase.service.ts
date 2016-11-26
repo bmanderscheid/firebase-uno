@@ -36,8 +36,6 @@ export class FirebaseService {
         this._gameStateSource = new BehaviorSubject<any>(null);
         this._gameState = this._gameStateSource.asObservable();
 
-        // move this shit?
-        // synchronous
         var config = {
             apiKey: "AIzaSyBWteIXPmEyjcpELIukCD7ZVaE5coXoMYI",
             authDomain: "uno-card-game-7dbd0.firebaseapp.com",
@@ -52,9 +50,11 @@ export class FirebaseService {
     auth(): void {
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                this._playerId = user.uid;
-                this.init();
-
+                console.log("auth changed, user in");
+                if (!this._playerId) {
+                    this._playerId = user.uid;
+                    this.init();
+                }
             }
             else {
                 var provider = new firebase.auth.GoogleAuthProvider();
@@ -83,21 +83,26 @@ export class FirebaseService {
     /* 
         DRAW CARD
     */
+
+    getDeck(): Promise<any> {
+        return firebase.database().ref(this._gameId + "/deck")
+            .once('value', snapshot => snapshot);
+    }
+
     drawCard(): void {
-        firebase.database().ref(this._gameId + "/deck")
-            .once('value')
-            .then(snapshot => this.updatePlayerHandAfterDraw(snapshot.val()));
+        this.getDeck()
+            .then(snapshot => this.updatePlayerHandAfterDraw(snapshot.val()))
+    }
+
+    drawMultipleCards(numCards: number): void {
+        this.getDeck()
+            .then(snapshot => this.updatePlayersHandAfterMultipleDraw(snapshot.val(), numCards));
     }
 
     updatePlayerHandAfterDraw(deck): void {
-        let cards: Object[] = Object.keys(deck).map(key => deck[key]);
-        cards.sort((a: any, b: any) => {
-            if (a.deckOrder < b.deckOrder) return -1;
-            if (a.deckOrder > b.deckOrder) return 1;
-            return 0;
-        });
+        let cards: Object[] = Object.keys(deck).map(key => deck[key]);  // turn deck into array
+        cards = this.sortCards(cards); // order array by deck order
         let card: any = cards.pop();
-
         let updates: Object = {};
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
@@ -106,10 +111,19 @@ export class FirebaseService {
             .update(updates, () => this.updatePlayerCardsInHand());
     }
 
-    updatePlayerCardsInHand(): void {
-        let ref: any = firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId);
-        ref.once('value')
-            .then(snapshot => ref.update({ cardsInHand: snapshot.val().cardsInHand + 1 }));
+    updatePlayersHandAfterMultipleDraw(deck, numCards): void {
+        let cards: Object[] = Object.keys(deck).map(key => deck[key]); // turn deck into array
+        cards = this.sortCards(cards); // order array by deck order
+
+        let updates: Object = {};
+        for (let i = 0; i < numCards; i++) {
+            let card: any = cards.pop();
+            updates[this._gameId + "/deck/" + card.id] = null;
+            updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
+        }
+        updates[this._gameId + "/gameState/lastMoveType"] = "play";
+        firebase.database().ref()
+            .update(updates, () => this.updatePlayerCardsInHand());
     }
 
     /* 
@@ -117,32 +131,42 @@ export class FirebaseService {
     */
 
     playCard(card: CardModel, newHandCount: number): void {
+        let moveType: string = card.opponentDraw ? "draw" + card.opponentDraw : "play";
         let updates: Object = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
         updates[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
         updates[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
-        updates[this._gameId + "/gameState/lastMoveType"] = "play";
-        firebase.database().ref().update(updates);
+        updates[this._gameId + "/gameState/lastMoveType"] = moveType;
+        firebase.database().ref().update(updates, () => this.updatePlayerCardsInHand());
     }
 
     pass(): void {
         let update: Object = {};
         update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
         update[this._gameId + "/gameState/lastMoveType"] = "pass";
-        //// dev - make current player logic
-
-        // change plager
-
         firebase.database().ref().update(update);
     }
 
+    updatePlayerCardsInHand(): void {
+        let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + this._playerId);
+        ref.once('value')
+            //.then(snapshot => ref.update({ cardsInHand: Number(snapshot.val().cardsInHand) + numCards }));
+            .then(snapshot =>
+                firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId)
+                    .update({ cardsInHand: Object.keys(snapshot.val()).length }));
+    }
+
+    // UTILITY
+    sortCards(cards: Object[]): Object[] {
+        return cards.sort((a: any, b: any) => {
+            if (a.deckOrder < b.deckOrder) return -1;
+            if (a.deckOrder > b.deckOrder) return 1;
+            return 0;
+        });
+    }
+
     //GET SET
-
-    // get currentPlayer(): Observable<string> {
-    //     return this._currentPlayer;
-    // }
-
     get playerHand(): Observable<CardModel> {
         return this._playerHand;
     }

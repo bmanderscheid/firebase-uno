@@ -51,7 +51,7 @@ var GameComponent = (function () {
         // init service and subscribe to game state changes
         this._gameService.init();
         this._gameService.gameState.subscribe(function (gameState) {
-            _this._canDraw = gameState.lastMoveType != "draw"; // MOVE!!
+            _this._canDraw = gameState.lastMoveType != "draw"; // this move type is only to check for pass -- reconsider
             _this.updateGame(gameState);
             _this.renderGame();
             _this.evaluateGame(gameState);
@@ -102,7 +102,7 @@ var GameComponent = (function () {
         else if (cardsDifference < 0)
             this.opponentPlayedCard();
         else if (cardsDifference > 0)
-            this.opponentDrewCard();
+            this.opponentDrewCard(cardsDifference);
     };
     GameComponent.prototype.updateAllOpponentCardsOnStart = function (numCards) {
         for (var i = 0; i < numCards; i++) {
@@ -134,6 +134,7 @@ var GameComponent = (function () {
     GameComponent.prototype.renderCardInPlay = function () {
         if (!this._cardInPlay)
             return;
+        console.log("update card in play");
         this._stage.addChild(this._cardInPlay);
         TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
     };
@@ -179,7 +180,7 @@ var GameComponent = (function () {
         if (!this._gameService.isCurrentPlayer)
             return;
         this.bringSpriteToFront(card);
-        if (card.cardModel.id == "wild") {
+        if (card.cardModel.isWild) {
             this._currentWildCard = card;
             this._showColorPicker = true;
         }
@@ -221,11 +222,13 @@ var GameComponent = (function () {
         this._stage.removeChild(card);
         this._opponentCards.splice(r, 1);
     };
-    GameComponent.prototype.opponentDrewCard = function () {
-        var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
-        card.anchor.set(.5, .5);
-        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
-        this._opponentCards.push(card);
+    GameComponent.prototype.opponentDrewCard = function (numCards) {
+        for (var i = 0; i < numCards; i++) {
+            var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+            card.anchor.set(.5, .5);
+            card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+            this._opponentCards.push(card);
+        }
     };
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     GameComponent.prototype.drawCard = function () {
@@ -239,7 +242,7 @@ var GameComponent = (function () {
     */
     GameComponent.prototype.evaluateGame = function (gameState) {
         TweenLite.killTweensOf(this.evaluateLastMove);
-        TweenLite.delayedCall(1, this.evaluateLastMove, [gameState], this);
+        TweenLite.delayedCall(.3, this.evaluateLastMove, [gameState], this);
     };
     // TODO - move and use enum
     GameComponent.prototype.evaluateLastMove = function (gameState) {
@@ -248,9 +251,20 @@ var GameComponent = (function () {
                 if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState))
                     this.pass();
                 break;
+            case "draw2":
+                if (this._gameService.isCurrentPlayer)
+                    this.drawMultipleCards(2);
+                break;
+            case "draw4":
+                if (this._gameService.isCurrentPlayer)
+                    this.drawMultipleCards(4);
+                break;
             default:
                 break;
         }
+    };
+    GameComponent.prototype.drawMultipleCards = function (numCards) {
+        this._gameService.drawMultipleCards(numCards);
     };
     GameComponent.prototype.isPlayPossible = function (gameState) {
         for (var _i = 0, _a = gameState.hand; _i < _a.length; _i++) {

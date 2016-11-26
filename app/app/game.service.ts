@@ -30,7 +30,7 @@ export class GameService {
         this._currentGameState = new GameState();
         this._currentGameState.hand = [];
         this._gameStateSource = new BehaviorSubject<GameState>(this._currentGameState);
-        this._gameState = this._gameStateSource.asObservable();        
+        this._gameState = this._gameStateSource.asObservable();
     }
 
     init(): void {
@@ -45,16 +45,15 @@ export class GameService {
 
     private startGame(): void {
         this._firebaseService.playerHand.subscribe((card: CardModel) => {
-            if (card) this._currentGameState.hand.push(card);            
+            if (card) this._currentGameState.hand.push(card);
             this.sendNextGameState();
         });
         this._firebaseService.gameState.subscribe((gameState: any) => {
-            if (gameState) {                
-                this._currentPlayerIndex = gameState.currentPlayer;                
+            if (gameState) {
+                this._currentPlayerIndex = gameState.currentPlayer;
                 this._currentGameState.cardInPlay = gameState.cardInPlay;
-                this._currentGameState.players = gameState.players;    
-                this._currentGameState.lastMoveType = gameState.lastMoveType;                
-                console.log(this._currentGameState);
+                this._currentGameState.players = gameState.players;
+                this._currentGameState.lastMoveType = gameState.lastMoveType;
             }
             this.sendNextGameState();
         });
@@ -69,13 +68,15 @@ export class GameService {
     */
 
     playCard(card: CardModel): void {
-        let gameState: GameState = this._gameStateSource.value;
-        gameState.hand = gameState.hand.filter(c => c.id != card.id);
-        this._firebaseService.playCard(card, gameState.hand.length);
+        this._firebaseService.playCard(card, this._gameStateSource.value.hand.length);
     }
 
     drawCard(): void {
         this._firebaseService.drawCard();
+    }
+
+    drawMultipleCards(numCards: number): void {
+        this._firebaseService.drawMultipleCards(numCards);
     }
 
     pass(): void {
@@ -105,14 +106,6 @@ export class GameService {
 
     get currentPlayer(): number {
         return this._currentPlayerIndex;
-    }
-
-    get playerId(): string {
-        return this._firebaseService.playerId;
-    }
-
-    get game(): GameModel {
-        return this._game;
     }
 
 }
