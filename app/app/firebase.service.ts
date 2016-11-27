@@ -50,7 +50,7 @@ export class FirebaseService {
     auth(): void {
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                console.log("auth changed, user in");
+                console.log("DEBUG: auth changed, user in");
                 if (!this._playerId) {
                     this._playerId = user.uid;
                     this.init();
@@ -71,8 +71,7 @@ export class FirebaseService {
 
     init(): void {
         firebase.database().ref(this._gameId + "/gameState")
-            .on('value', snapshot => {
-                console.log("game state changed");
+            .on('value', snapshot => {                
                 this._gameStateSource.next(snapshot.val());
             });
         firebase.database().ref(this._gameId + "/playerHands/" + this._playerId)

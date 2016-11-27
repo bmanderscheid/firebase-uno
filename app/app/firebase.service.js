@@ -38,7 +38,7 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.auth().onAuthStateChanged(function (user) {
             if (user) {
-                console.log("auth changed, user in");
+                console.log("DEBUG: auth changed, user in");
                 if (!_this._playerId) {
                     _this._playerId = user.uid;
                     _this.init();
@@ -58,7 +58,6 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.database().ref(this._gameId + "/gameState")
             .on('value', function (snapshot) {
-            console.log("game state changed");
             _this._gameStateSource.next(snapshot.val());
         });
         firebase.database().ref(this._gameId + "/playerHands/" + this._playerId)

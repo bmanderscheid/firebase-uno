@@ -78,6 +78,8 @@ var GameComponent = (function () {
             this.updateOpponentCards(gameState.players[this._gameService.opponent]);
     };
     GameComponent.prototype.updateCardInPlay = function (cardModel) {
+        if (this._cardInPlay && cardModel.id == this._cardInPlay.cardModel.id)
+            return;
         this._cardInPlay = this.spawnCard(cardModel);
         this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
     };

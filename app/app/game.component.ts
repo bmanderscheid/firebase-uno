@@ -100,7 +100,8 @@ export class GameComponent implements OnInit {
     if (gameState.players) this.updateOpponentCards(gameState.players[this._gameService.opponent]);
   }
 
-  private updateCardInPlay(cardModel: CardModel): void {    
+  private updateCardInPlay(cardModel: CardModel): void {
+    if (this._cardInPlay && cardModel.id == this._cardInPlay.cardModel.id) return;
     this._cardInPlay = this.spawnCard(cardModel);
     this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
   }
@@ -155,7 +156,7 @@ export class GameComponent implements OnInit {
   }
 
   private renderCardInPlay(): void {
-    if (!this._cardInPlay) return;    
+    if (!this._cardInPlay) return;
     this._stage.addChild(this._cardInPlay);
     TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
   }
