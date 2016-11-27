@@ -155,8 +155,7 @@ export class GameComponent implements OnInit {
   }
 
   private renderCardInPlay(): void {
-    if (!this._cardInPlay) return;
-    console.log("update card in play");
+    if (!this._cardInPlay) return;    
     this._stage.addChild(this._cardInPlay);
     TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
   }

@@ -72,6 +72,7 @@ export class FirebaseService {
     init(): void {
         firebase.database().ref(this._gameId + "/gameState")
             .on('value', snapshot => {
+                console.log("game state changed");
                 this._gameStateSource.next(snapshot.val());
             });
         firebase.database().ref(this._gameId + "/playerHands/" + this._playerId)
@@ -130,7 +131,7 @@ export class FirebaseService {
         PLAYS
     */
 
-    playCard(card: CardModel, newHandCount: number): void {
+    playCard(card: CardModel, newHandCount: number): void {        
         let moveType: string = card.opponentDraw ? "draw" + card.opponentDraw : "play";
         let updates: Object = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
@@ -148,7 +149,7 @@ export class FirebaseService {
         firebase.database().ref().update(update);
     }
 
-    updatePlayerCardsInHand(): void {
+    updatePlayerCardsInHand(): void {        
         let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + this._playerId);
         ref.once('value')
             //.then(snapshot => ref.update({ cardsInHand: Number(snapshot.val().cardsInHand) + numCards }));

@@ -58,6 +58,7 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.database().ref(this._gameId + "/gameState")
             .on('value', function (snapshot) {
+            console.log("game state changed");
             _this._gameStateSource.next(snapshot.val());
         });
         firebase.database().ref(this._gameId + "/playerHands/" + this._playerId)
