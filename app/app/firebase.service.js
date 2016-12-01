@@ -18,12 +18,15 @@ require('firebase/database');
 require('firebase/auth');
 var FirebaseService = (function () {
     function FirebaseService() {
-        //will be passed in somehow from dashboard
         this._gameId = "game_1234";
         this._playerHandSource = new BehaviorSubject_1.BehaviorSubject(null);
         this._playerHand = this._playerHandSource.asObservable();
-        this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(null);
-        this._gameState = this._gameStateSource.asObservable();
+        this._oppoentHandCountSource = new BehaviorSubject_1.BehaviorSubject(null);
+        this._oppoentHandCount = this._oppoentHandCountSource.asObservable();
+        this._cardInPlaySource = new BehaviorSubject_1.BehaviorSubject(null);
+        this._cardInPlay = this._cardInPlaySource.asObservable();
+        this._currentPlayerIndexSource = new BehaviorSubject_1.BehaviorSubject(-1); // start an nobody's turn
+        this._currentPlayerIndex = this._currentPlayerIndexSource.asObservable();
         var config = {
             apiKey: "AIzaSyBWteIXPmEyjcpELIukCD7ZVaE5coXoMYI",
             authDomain: "uno-card-game-7dbd0.firebaseapp.com",
@@ -56,9 +59,17 @@ var FirebaseService = (function () {
     };
     FirebaseService.prototype.init = function () {
         var _this = this;
-        firebase.database().ref(this._gameId + "/gameState")
+        firebase.database().ref(this._gameId + "/gameState/players") // chage players fb node name
             .on('value', function (snapshot) {
-            _this._gameStateSource.next(snapshot.val());
+            _this._oppoentHandCountSource.next(snapshot.val());
+        });
+        firebase.database().ref(this._gameId + "/gameState/currentPlayer") // change fb node to ...index
+            .on('value', function (snapshot) {
+            _this._currentPlayerIndexSource.next(snapshot.val());
+        });
+        firebase.database().ref(this._gameId + "/gameState/cardInPlay")
+            .on('value', function (snapshot) {
+            _this._cardInPlaySource.next(snapshot.val());
         });
         firebase.database().ref(this._gameId + "/playerHands/" + this._playerId)
             .on('child_added', function (snapshot) {
@@ -90,7 +101,7 @@ var FirebaseService = (function () {
         var updates = {};
         updates[this._gameId + "/deck/" + card.id] = null;
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
-        updates[this._gameId + "/gameState/lastMoveType"] = "draw";
+        console.log(updates);
         firebase.database().ref()
             .update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
@@ -104,27 +115,24 @@ var FirebaseService = (function () {
             updates[this._gameId + "/deck/" + card.id] = null;
             updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         }
-        updates[this._gameId + "/gameState/lastMoveType"] = "play";
         firebase.database().ref()
             .update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
     /*
         PLAYS
     */
-    FirebaseService.prototype.playCard = function (card, newHandCount) {
+    FirebaseService.prototype.playCard = function (card) {
         var _this = this;
         var moveType = card.opponentDraw ? "draw" + card.opponentDraw : "play";
         var updates = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
-        updates[this._gameId + "/gameState/players/" + this._playerId + "/cardsInHand"] = newHandCount;
-        updates[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
-        updates[this._gameId + "/gameState/lastMoveType"] = moveType;
+        updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
     FirebaseService.prototype.pass = function () {
         var update = {};
-        update[this._gameId + "/gameState/currentPlayer"] = this._gameStateSource.value.currentPlayer == 0 ? 1 : 0;
+        update[this._gameId + "/gameState/currentPlayer"] = this._cardInPlaySource.value.currentPlayer == 0 ? 1 : 0;
         update[this._gameId + "/gameState/lastMoveType"] = "pass";
         firebase.database().ref().update(update);
     };
@@ -155,6 +163,20 @@ var FirebaseService = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(FirebaseService.prototype, "oppoentHandCount", {
+        get: function () {
+            return this._oppoentHandCount;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(FirebaseService.prototype, "currentPlayerIndex", {
+        get: function () {
+            return this._currentPlayerIndex;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(FirebaseService.prototype, "playerId", {
         get: function () {
             return this._playerId;
@@ -162,9 +184,9 @@ var FirebaseService = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(FirebaseService.prototype, "gameState", {
+    Object.defineProperty(FirebaseService.prototype, "cardInPlay", {
         get: function () {
-            return this._gameState;
+            return this._cardInPlay;
         },
         enumerable: true,
         configurable: true

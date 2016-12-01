@@ -5,4 +5,8 @@ import 'rxjs/add/operator/toPromise';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
-export class PlayerService { }
+import { PlayerModel } from '../app/player.model';
+
+export class PlayerService {
+    private _players: PlayerModel[];
+}

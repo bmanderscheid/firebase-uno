@@ -1,8 +1,9 @@
 import { CardModel } from '../app/card.model';
+import { MoveType } from '../app/game-values';
 
-export class GameState {
-    players: any[];
-    hand: CardModel[];
+export class GameStateChange {
+    moveType: MoveType;
+    cardAddedToHand: CardModel;
     cardInPlay: CardModel;
-    lastMoveType: string;
+    playerHandCounts: Object;
 }

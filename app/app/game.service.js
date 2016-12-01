@@ -12,13 +12,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var firebase_service_1 = require('../app/firebase.service');
 var game_state_model_1 = require('../app/game-state.model');
+var game_values_1 = require('../app/game-values');
 require('rxjs/add/operator/toPromise');
 var BehaviorSubject_1 = require('rxjs/BehaviorSubject');
 var GameService = (function () {
     function GameService(_firebaseService) {
         this._firebaseService = _firebaseService;
-        this._currentGameState = new game_state_model_1.GameState();
-        this._currentGameState.hand = [];
+        this._currentGameState = new game_state_model_1.GameStateChange();
         this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(this._currentGameState);
         this._gameState = this._gameStateSource.asObservable();
     }
@@ -27,25 +27,31 @@ var GameService = (function () {
         // just getting getting by before dashboard
         this._firebaseService.auth();
         this._firebaseService.getGame()
-            .then(function (gameData) {
-            _this._game = gameData.val();
-            _this.startGame();
-        });
+            .then(function (gameData) { return _this.setGameData(gameData.val()); });
+    };
+    GameService.prototype.setGameData = function (gameData) {
+        var _this = this;
+        // set this player
+        this._playerId = this._firebaseService.playerId; //change how you set this        
+        this._player = gameData.players.filter(function (player) { return player.uid == _this._playerId; })[0];
+        this.startGame();
     };
     GameService.prototype.startGame = function () {
         var _this = this;
+        this._firebaseService.currentPlayerIndex.subscribe(function (playerIndex) { return _this._currentPlayerIndex = playerIndex; });
         this._firebaseService.playerHand.subscribe(function (card) {
-            if (card)
-                _this._currentGameState.hand.push(card);
+            _this._currentGameState.cardAddedToHand = card;
+            _this._currentGameState.moveType = game_values_1.MoveType.CARD_ADDED_TO_HAND;
             _this.sendNextGameState();
         });
-        this._firebaseService.gameState.subscribe(function (gameState) {
-            if (gameState) {
-                _this._currentPlayerIndex = gameState.currentPlayer;
-                _this._currentGameState.cardInPlay = gameState.cardInPlay;
-                _this._currentGameState.players = gameState.players;
-                _this._currentGameState.lastMoveType = gameState.lastMoveType;
-            }
+        this._firebaseService.oppoentHandCount.subscribe(function (data) {
+            _this._currentGameState.playerHandCounts = data;
+            _this._currentGameState.moveType = game_values_1.MoveType.PLAYER_HAND_COUNTS_UPDATED;
+            _this.sendNextGameState();
+        });
+        this._firebaseService.cardInPlay.subscribe(function (card) {
+            _this._currentGameState.cardInPlay = card;
+            _this._currentGameState.moveType = game_values_1.MoveType.CARD_IN_PLAY_UPDATED;
             _this.sendNextGameState();
         });
     };
@@ -56,7 +62,7 @@ var GameService = (function () {
         GAME ACTIONS
     */
     GameService.prototype.playCard = function (card) {
-        this._firebaseService.playCard(card, this._gameStateSource.value.hand.length);
+        this._firebaseService.playCard(card);
     };
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCard();
@@ -83,7 +89,7 @@ var GameService = (function () {
     });
     Object.defineProperty(GameService.prototype, "isCurrentPlayer", {
         get: function () {
-            return this._game.players[this._currentPlayerIndex].uid == this._firebaseService.playerId;
+            return this._player.turnOrder == this._currentPlayerIndex;
         },
         enumerable: true,
         configurable: true
@@ -92,6 +98,13 @@ var GameService = (function () {
         get: function () {
             var _this = this;
             return this._game.players.filter(function (player) { return player.uid != _this._firebaseService.playerId; })[0].uid;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GameService.prototype, "playerId", {
+        get: function () {
+            return this._firebaseService.playerId;
         },
         enumerable: true,
         configurable: true

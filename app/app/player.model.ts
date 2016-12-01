@@ -1,5 +1,6 @@
 export class PlayerModel {
     uid: string;
-    playerIndex:number;
-    cardsInHand: number;
+    pic: string;
+    name: string;
+    turnOrder: number;
 }

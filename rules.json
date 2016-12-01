@@ -1,0 +1,24 @@
+{
+    "rules": {
+        "$game": {
+            "deck": {
+                ".write": true,
+                ".read": true
+            },
+            "playerHands": {
+                "$uid": {
+                    ".write": "auth != null",
+                    ".read": "auth != null"
+                }
+            },
+            "gameData": {
+                ".write": false,
+                ".read": true
+            },
+            "gameState": {
+                ".write": "auth != null",
+                ".read": "auth != null"
+            }
+        }
+    }
+}
