@@ -11,16 +11,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var game_service_1 = require('../app/game.service');
 var card_sprite_1 = require('../app/card.sprite');
+var game_values_1 = require('../app/game-values');
 var GameComponent = (function () {
     function GameComponent(_gameService) {
         this._gameService = _gameService;
-        //move to config(s)
+        //move to config(s)  
         this.GAME_SPEED = .5;
         this.PLAYER_REALM_Y = 640;
         this.OPPONENT_REALM_Y = 140;
         this.DISCARD_POS = { x: 600, y: 384 };
         this.DECK_POS = { x: 450, y: 384 };
-        this._firstGameStateUpdate = true;
+        this._showColorPicker = false;
         this._canDraw = true;
     }
     GameComponent.prototype.ngOnInit = function () {
@@ -43,19 +44,12 @@ var GameComponent = (function () {
         this.initGame();
     };
     GameComponent.prototype.initGame = function () {
-        var _this = this;
+        // draw initial UI
         this.drawUI();
+        this.initGameSubscriptions();
+        // initialize sprite containers
         this._playerCards = [];
         this._opponentCards = [];
-        this._gameService.init();
-        this._gameService.gameState.subscribe(function (gameState) {
-            if (!gameState)
-                return;
-            _this._currentGameState = gameState;
-            _this.updateGame();
-            _this.renderGame();
-            _this._firstGameStateUpdate = false; // set to false so rendered property is honored         
-        });
     };
     GameComponent.prototype.drawUI = function () {
         var _this = this;
@@ -66,41 +60,16 @@ var GameComponent = (function () {
         this._deck.on("mousedown", function (e) { return _this.drawCard(); });
         this._stage.addChild(this._deck);
     };
-    /*
-      GAME UPDTATE
-    */
-    GameComponent.prototype.updateGame = function () {
+    GameComponent.prototype.initGameSubscriptions = function () {
         var _this = this;
-        // card in playCard
-        this._cardModelInPlay = this._currentGameState.cardInPlay;
-        this._cardInPlay = this.spawnCard(this._cardModelInPlay);
-        this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
-        // player hand     
-        this._playerHand = this._currentGameState.hand;
-        this.updatePlayerCards();
-        this._playerCards.sort(function (a, b) {
-            if (a.cardModel.id < b.cardModel.id)
-                return -1;
-            if (a.cardModel.id > b.cardModel.id)
-                return 1;
-            return 0;
-        });
-        // opponent hand
-        // sloppy player management.  Wanting to move on so this will do for now
-        var opponent = this._currentGameState.players
-            .filter(function (player) { return player.uid != _this._gameService.playerId; })[0];
-        this._opponentNumCards = opponent.cardsInHand;
-        this.updateOpponentCards();
-        // seriously flawed
-        //evaluate a force turnover after game speed is complete
-        TweenLite.delayedCall(this.GAME_SPEED, function () {
-            if (_this._gameService.isCurrentPlayer
-                && !_this._canDraw
-                && _this.isPlayPossible())
-                _this.pass();
-            ;
+        // init service and subscribe to game state changes
+        this._gameService.init();
+        this._gameService.gameState.subscribe(function (gameState) {
+            if (gameState)
+                _this.gameStateChanged(gameState);
         });
     };
+<<<<<<< HEAD
     GameComponent.prototype.updatePlayerCards = function () {
         var _this = this;
         for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
@@ -116,55 +85,74 @@ var GameComponent = (function () {
                 this._playerCards.push(card);
                 spawnCard = false;
             }
+=======
+    GameComponent.prototype.gameStateChanged = function (gameState) {
+        switch (gameState.moveType) {
+            case game_values_1.MoveType.CARD_ADDED_TO_HAND:
+                if (gameState.cardAddedToHand)
+                    this.updatePlayerHand(gameState.cardAddedToHand);
+                break;
+            case game_values_1.MoveType.PLAYER_HAND_COUNTS_UPDATED:
+                if (gameState.playerHandCounts)
+                    this.updateOpponentHands(gameState.playerHandCounts);
+                break;
+            case game_values_1.MoveType.CARD_IN_PLAY_UPDATED:
+                if (gameState.cardInPlay)
+                    this.cardInPlayChanged(gameState.cardInPlay);
+                break;
+>>>>>>> 0da1ab4f1fb7758135c8c828ec688e24cb6e0836
         }
     };
-    GameComponent.prototype.updateOpponentCards = function () {
-        var cardsDifference = this._opponentNumCards - this._opponentCards.length;
-        if (this._firstGameStateUpdate)
-            this.updateOpponentAllOpponentCardsOnStart();
-        else if (cardsDifference < 0)
-            this.opponentCardPlay();
-        else if (cardsDifference > 0)
-            this.opponentDrawCard();
+    //GAME CHAGES
+    GameComponent.prototype.cardInPlayChanged = function (cardModl) {
+        this.updateCardInPlay(cardModl);
+        this.renderCardInPlay(); // could be an issue.  Card might render in deck pos before getting opp turn update   
     };
-    GameComponent.prototype.updateOpponentAllOpponentCardsOnStart = function () {
-        for (var i = 0; i < this._opponentNumCards; i++) {
+    GameComponent.prototype.updatePlayerHand = function (cardModel) {
+        this.updatePlayerCards(cardModel);
+        this.renderPlayerCards();
+    };
+    GameComponent.prototype.updateOpponentHands = function (playerHandCounts) {
+        var _this = this;
+        var opponents = Object.keys(playerHandCounts).
+            map(function (key) { return playerHandCounts[key]; })
+            .filter(function (player) { return player.uid != _this._gameService.playerId; });
+        var opponent = opponents[0];
+        this.updateOpponentCards(opponent.cardsInHand);
+        this.renderOpponentCards();
+    };
+    //GAME UPDATES
+    GameComponent.prototype.updateCardInPlay = function (cardModel) {
+        this._cardInPlay = this.spawnCard(cardModel);
+        this._cardInPlay.position.set(this.DISCARD_POS.x, this.DISCARD_POS.y);
+    };
+    GameComponent.prototype.updatePlayerCards = function (cardModel) {
+        var _this = this;
+        var card = this.spawnCard(cardModel);
+        card.on("mousedown", function (e) { return _this.cardSelected(e.target); });
+        this._playerCards.push(card);
+        // sort cards
+        this._playerCards = this.sortCards(this._playerCards);
+    };
+    // this is a two player game - but using a possible multiple oppoent approach
+    GameComponent.prototype.updateOpponentCards = function (numCards) {
+        var cardsDifference = numCards - this._opponentCards.length;
+        if (this._opponentCards.length < 1)
+            this.updateAllOpponentCardsOnStart(numCards);
+        else if (cardsDifference < 0)
+            this.opponentPlayedCard();
+        else if (cardsDifference > 0)
+            this.opponentDrewCard(cardsDifference);
+    };
+    GameComponent.prototype.updateAllOpponentCardsOnStart = function (numCards) {
+        for (var i = 0; i < numCards; i++) {
             var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
             card.anchor.set(.5, .5);
             card.position.set(100, 50);
             this._opponentCards.push(card);
         }
     };
-    GameComponent.prototype.opponentCardPlay = function () {
-        //this._opponentCards[0].texture = this._cardInPlay.texture;
-        var r = Math.floor(Math.random() * this._opponentCards.length);
-        var card = this._opponentCards[r];
-        this._cardInPlay.position.set(card.x, card.y);
-        this._stage.removeChild(card);
-        this._opponentCards.splice(r, 1);
-    };
-    GameComponent.prototype.opponentDrawCard = function () {
-        var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
-        card.anchor.set(.5, .5);
-        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
-        this._opponentCards.push(card);
-    };
-    GameComponent.prototype.spawnCard = function (cardModel) {
-        var card = new card_sprite_1.CardSprite(cardModel);
-        card.render();
-        card.interactive = true;
-        card.anchor.set(.5, .5);
-        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
-        return card;
-    };
-    /*
-      GAME RENDER
-    */
-    GameComponent.prototype.renderGame = function () {
-        this.renderPlayerCards();
-        this.renderOpponentCards();
-        this.renderCardInPlay();
-    };
+    //GAME RENDERS
     GameComponent.prototype.renderCardInPlay = function () {
         this._stage.addChild(this._cardInPlay);
         TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
@@ -186,7 +174,6 @@ var GameComponent = (function () {
             xPos += sprite.width;
         }
     };
-    // combine function with render player cards
     GameComponent.prototype.renderOpponentCards = function () {
         var stageCenter = 512;
         var widthOfHand = this._opponentCards.length * this._opponentCards[0].width;
@@ -204,14 +191,20 @@ var GameComponent = (function () {
             xPos += sprite.width;
         }
     };
-    /*
-        GAME EVALUATIONS AND ACTIONS
-    */
-    GameComponent.prototype.playCard = function (card) {
+    // GAME PLAY
+    GameComponent.prototype.cardSelected = function (card) {
         if (!this._gameService.isCurrentPlayer)
             return;
-        this._stage.removeChild(card);
-        this._stage.addChild(card);
+        this.bringSpriteToFront(card);
+        if (card.cardModel.isWild) {
+            this._currentWildCard = card;
+            this._showColorPicker = true;
+        }
+        else {
+            this.playCard(card);
+        }
+    };
+    GameComponent.prototype.playCard = function (card) {
         TweenLite.to(card, this.GAME_SPEED, {
             x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
@@ -223,41 +216,138 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.evaluatePlayedCard = function (card) {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
+<<<<<<< HEAD
             || card.cardModel.color == this._cardInPlay.cardModel.color) {
             console.log("upate firebase now and stop controls");
+=======
+            || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
+            this.pullCardSpriteFromPlayerCards(card);
+            this._gameService.playCard(card.cardModel);
+            this.resetPlayerForNextTurn();
+>>>>>>> 0da1ab4f1fb7758135c8c828ec688e24cb6e0836
         }
         else {
             this.renderPlayerCards();
         }
     };
+    //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     GameComponent.prototype.drawCard = function () {
-        if (this._canDraw) {
+        if (this._gameService.isCurrentPlayer && this._canDraw && TweenMax.getAllTweens().length == 0) {
             this._canDraw = false;
             this._gameService.drawCard();
         }
     };
-    GameComponent.prototype.resetPlayerForNextTurn = function () {
-        this._canDraw = true;
+    GameComponent.prototype.opponentPlayedCard = function () {
+        var r = Math.floor(Math.random() * this._opponentCards.length);
+        var card = this._opponentCards[r];
+        this._cardInPlay.position.set(card.x, card.y);
+        this._stage.removeChild(card);
+        this._opponentCards.splice(r, 1);
+        this.renderCardInPlay();
     };
-    GameComponent.prototype.isPlayPossible = function () {
-        for (var _i = 0, _a = this._playerHand; _i < _a.length; _i++) {
-            var card = _a[_i];
-            if (card.value == this._cardModelInPlay.value
-                || card.color == this._cardModelInPlay.color)
-                return false;
+    GameComponent.prototype.opponentDrewCard = function (numCards) {
+        for (var i = 0; i < numCards; i++) {
+            var card = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
+            card.anchor.set(.5, .5);
+            card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+            this._opponentCards.push(card);
         }
-        console.log("no play possible");
-        return true;
+    };
+    /*
+      GAME UPDTATE
+    */
+    GameComponent.prototype.spawnCard = function (cardModel) {
+        var card = new card_sprite_1.CardSprite(cardModel);
+        card.render();
+        card.interactive = true;
+        card.anchor.set(.5, .5);
+        card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+        return card;
+    };
+    /*
+      GAME RENDER
+    */
+    GameComponent.prototype.renderGame = function () {
+        // possibly evaluate this on gamestate update
+        if (this._playerCards.length > 0)
+            this.renderPlayerCards();
+        if (this._opponentCards.length > 0)
+            this.renderOpponentCards();
+        this.renderCardInPlay();
+    };
+    // combine function with render player cards
+    /*
+        GAME PLAY
+    */
+    GameComponent.prototype.colorPickerClicked = function (color) {
+        this._currentWildCard.updateForWild(color);
+        this._showColorPicker = false;
+        this.playCard(this._currentWildCard);
+        this._currentWildCard = null;
+    };
+    /*
+      GAME EVALUATIONS
+    */
+    GameComponent.prototype.evaluateGame = function (gameState) {
+        TweenLite.killTweensOf(this.evaluateLastMove);
+        TweenLite.delayedCall(.3, this.evaluateLastMove, [gameState], this);
+    };
+    // TODO - move and use enum
+    GameComponent.prototype.evaluateLastMove = function (gameState) {
+        // switch (gameState.lastMoveType) {
+        //     case "draw":
+        //         if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState)) this.pass();
+        //         break;
+        //     case "draw2":
+        //         if (this._gameService.isCurrentPlayer) this.drawMultipleCards(2);
+        //         break;
+        //     case "draw4":
+        //         if (this._gameService.isCurrentPlayer) this.drawMultipleCards(4);
+        //         break;
+        //     default:
+        //         break;
+        // }
+    };
+    GameComponent.prototype.drawMultipleCards = function (numCards) {
+        this._gameService.drawMultipleCards(numCards);
+    };
+    GameComponent.prototype.isPlayPossible = function (gameState) {
+        for (var _i = 0, _a = gameState.hand; _i < _a.length; _i++) {
+            var card = _a[_i];
+            if ((card.value == gameState.cardInPlay.value
+                || card.color == gameState.cardInPlay.color))
+                return true;
+        }
+        return false;
+    };
+    GameComponent.prototype.resetPlayerForNextTurn = function () {
+        this.renderPlayerCards();
+        this._canDraw = true;
     };
     GameComponent.prototype.pass = function () {
         this._gameService.pass();
+        this.resetPlayerForNextTurn();
     };
     /*
       UTILITY
     */
+    GameComponent.prototype.sortCards = function (cards) {
+        return cards.sort(function (a, b) {
+            if (a.cardModel.id < b.cardModel.id)
+                return -1;
+            if (a.cardModel.id > b.cardModel.id)
+                return 1;
+            return 0;
+        });
+    };
+    GameComponent.prototype.bringSpriteToFront = function (sprite) {
+        this._stage.removeChild(sprite);
+        this._stage.addChild(sprite);
+    };
     GameComponent.prototype.pullCardSpriteFromPlayerCards = function (card) {
         this._playerCards = this._playerCards.filter(function (c) { return card.cardModel.id != c.cardModel.id; });
     };
+    //update canvas
     GameComponent.prototype.render = function () {
         if (!this._renderer)
             return;
@@ -266,7 +356,7 @@ var GameComponent = (function () {
     GameComponent = __decorate([
         core_1.Component({
             selector: 'game',
-            template: '<div id="stage"></div>'
+            templateUrl: './app/game.component.html'
         }), 
         __metadata('design:paramtypes', [game_service_1.GameService])
     ], GameComponent);

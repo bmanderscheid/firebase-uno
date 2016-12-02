@@ -1,1 +1,1 @@
-{"version":3,"file":"card.model.js","sourceRoot":"","sources":["card.model.ts"],"names":[],"mappings":";AAAA;IAAA;IAKA,CAAC;IAAD,gBAAC;AAAD,CAAC,AALD,IAKC;AALY,iBAAS,YAKrB,CAAA"}
+{"version":3,"file":"card.model.js","sourceRoot":"","sources":["card.model.ts"],"names":[],"mappings":";AAAA;IAAA;QAGI,YAAO,GAAY,KAAK,CAAC;QAEzB,WAAM,GAAY,KAAK,CAAC;QACxB,iBAAY,GAAW,CAAC,CAAC;IAC7B,CAAC;IAAD,gBAAC;AAAD,CAAC,AAPD,IAOC;AAPY,iBAAS,YAOrB,CAAA"}
