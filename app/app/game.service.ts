@@ -70,7 +70,7 @@ export class GameService {
     }
 
     private sendNextGameState(): void {
-        this._gameStateSource.next(this._currentGameState);)
+        this._gameStateSource.next(this._currentGameState);
     }
 
     /*
