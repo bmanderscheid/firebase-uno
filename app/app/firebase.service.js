@@ -123,12 +123,35 @@ var FirebaseService = (function () {
     */
     FirebaseService.prototype.playCard = function (card) {
         var _this = this;
-        var moveType = card.opponentDraw ? "draw" + card.opponentDraw : "play";
         var updates = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
         updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(); });
+    };
+    // possibly meld into regular play card method
+    FirebaseService.prototype.playDrawCard = function (card, opponentId) {
+        var _this = this;
+        this.getDeck()
+            .then(function (snapshot) { return _this.test(snapshot.val(), card.opponentDraw, opponentId); });
+        var updates = {};
+        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
+        updates[this._gameId + "/gameState/cardInPlay"] = card;
+        updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
+        firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(); });
+    };
+    FirebaseService.prototype.test = function (deck, numCards, opponentId) {
+        var _this = this;
+        var cards = Object.keys(deck).map(function (key) { return deck[key]; }); // turn deck into array
+        cards = this.sortCards(cards); // order array by deck order
+        var updates = {};
+        for (var i = 0; i < numCards; i++) {
+            var card = cards.pop();
+            updates[this._gameId + "/deck/" + card.id] = null;
+            updates[this._gameId + "/playerHands/" + opponentId + "/" + card.id] = card;
+        }
+        firebase.database().ref()
+            .update(updates, function () { return _this.updatePlayerCardsInHand(); });
     };
     FirebaseService.prototype.pass = function () {
         var update = {};

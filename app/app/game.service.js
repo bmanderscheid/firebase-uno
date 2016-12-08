@@ -34,6 +34,7 @@ var GameService = (function () {
         // set this player
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(function (player) { return player.uid == _this._playerId; })[0];
+        this._opponent = gameData.players.filter(function (player) { return player.uid != _this._playerId; })[0];
         this.startGame();
     };
     GameService.prototype.startGame = function () {
@@ -63,6 +64,8 @@ var GameService = (function () {
     */
     GameService.prototype.playCard = function (card) {
         this._firebaseService.playCard(card);
+        if (card.opponentDraw > 0)
+            this._firebaseService.playDrawCard(card, this._opponent.uid);
     };
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCard();

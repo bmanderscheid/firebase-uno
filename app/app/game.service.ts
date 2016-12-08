@@ -26,9 +26,7 @@ export class GameService {
     private _game: GameModel; // overall game information.  Does not update
     private _playerId: string;
     private _player: PlayerModel;
-
-    // fuck you
-    private _opponentId: string;
+    private _opponent: PlayerModel; // gross - tied to 2 player only
 
     constructor(private _firebaseService: FirebaseService) {
         this._currentGameState = new GameStateChange();
@@ -47,6 +45,7 @@ export class GameService {
         // set this player
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(player => player.uid == this._playerId)[0];
+        this._opponent = gameData.players.filter(player => player.uid != this._playerId)[0];
         this.startGame();
     }
 
@@ -79,6 +78,7 @@ export class GameService {
 
     playCard(card: CardModel): void {
         this._firebaseService.playCard(card);
+        if (card.opponentDraw > 0) this._firebaseService.playDrawCard(card, this._opponent.uid);
     }
 
     drawCard(): void {

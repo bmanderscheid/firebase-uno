@@ -28,6 +28,7 @@ var CardSprite = (function (_super) {
             this.texture = PIXI.Texture.fromFrame("wild-" + this._cardModel.color + ".png");
     };
     Object.defineProperty(CardSprite.prototype, "cardModel", {
+        // get set
         get: function () {
             return this._cardModel;
         },

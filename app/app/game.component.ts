@@ -25,7 +25,7 @@ export class GameComponent implements OnInit {
     private DECK_POS: any = { x: 450, y: 384 }
 
     //game play
-    private _canDraw: boolean;
+    private _numDrawsThisTurn: number;
     private _currentWildCard: CardSprite;
 
     //sprites
@@ -40,7 +40,7 @@ export class GameComponent implements OnInit {
 
     constructor(private _gameService: GameService) {
         this._showColorPicker = false;
-        this._canDraw = true;
+        this._numDrawsThisTurn = 0;
     }
 
     ngOnInit() {
@@ -100,7 +100,7 @@ export class GameComponent implements OnInit {
             case MoveType.PLAYER_HAND_COUNTS_UPDATED:
                 if (gameState.playerHandCounts) this.updateOpponentHands(gameState.playerHandCounts);
                 break;
-            case MoveType.CARD_IN_PLAY_UPDATED:
+            case MoveType.CARD_IN_PLAY_UPDATED: // card played
                 if (gameState.cardInPlay) this.cardInPlayChanged(gameState.cardInPlay);
                 break;
         }
@@ -230,7 +230,7 @@ export class GameComponent implements OnInit {
     private evaluatePlayedCard(card: CardSprite): void {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
             || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
-            this.pullCardSpriteFromPlayerCards(card);
+            this.removeCardSpriteFromPlayerCards(card);
             this._gameService.playCard(card.cardModel);
             this.resetPlayerForNextTurn();
         }
@@ -241,10 +241,19 @@ export class GameComponent implements OnInit {
 
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     private drawCard(): void {
-        if (this._gameService.isCurrentPlayer && this._canDraw && TweenMax.getAllTweens().length == 0) {
-            this._canDraw = false;
+        if (this._numDrawsThisTurn > 0) return;
+        if (!this.playPossible() && TweenMax.getAllTweens().length == 0) {
+            this._numDrawsThisTurn++;
             this._gameService.drawCard();
         }
+    }
+
+    private playPossible(): boolean {
+        let cardInPlayModel: CardModel = this._cardInPlay.cardModel;
+        let playableCards: CardSprite[] = this._playerCards.filter(card =>
+            card.cardModel.id == cardInPlayModel.id ||
+            card.cardModel.color == cardInPlayModel.color);
+        //return playableCards.length > 0 && this._gameService.isCurrentPlayer;
     }
 
     private opponentPlayedCard(): void {
@@ -367,43 +376,14 @@ export class GameComponent implements OnInit {
       GAME EVALUATIONS
     */
 
-    private evaluateGame(gameState: GameStateChange): void {
-        TweenLite.killTweensOf(this.evaluateLastMove);
-        TweenLite.delayedCall(.3, this.evaluateLastMove, [gameState], this);
-    }
-
-    // TODO - move and use enum
-    private evaluateLastMove(gameState: GameStateChange): void {
-        // switch (gameState.lastMoveType) {
-        //     case "draw":
-        //         if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState)) this.pass();
-        //         break;
-        //     case "draw2":
-        //         if (this._gameService.isCurrentPlayer) this.drawMultipleCards(2);
-        //         break;
-        //     case "draw4":
-        //         if (this._gameService.isCurrentPlayer) this.drawMultipleCards(4);
-        //         break;
-        //     default:
-        //         break;
-        // }
-    }
-
     private drawMultipleCards(numCards: number): void {
         this._gameService.drawMultipleCards(numCards);
     }
 
-    private isPlayPossible(gameState: any): boolean {
-        for (let card of gameState.hand) {
-            if ((card.value == gameState.cardInPlay.value
-                || card.color == gameState.cardInPlay.color)) return true;
-        }
-        return false;
-    }
 
     private resetPlayerForNextTurn(): void {
         this.renderPlayerCards();
-        this._canDraw = true;
+        this._numDrawsThisTurn = 0;
     }
 
     private pass(): void {
@@ -429,7 +409,7 @@ export class GameComponent implements OnInit {
         this._stage.addChild(sprite);
     }
 
-    private pullCardSpriteFromPlayerCards(card: CardSprite): void {
+    private removeCardSpriteFromPlayerCards(card: CardSprite): void {
         this._playerCards = this._playerCards.filter(c => card.cardModel.id != c.cardModel.id);
     }
 

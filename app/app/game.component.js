@@ -22,7 +22,7 @@ var GameComponent = (function () {
         this.DISCARD_POS = { x: 600, y: 384 };
         this.DECK_POS = { x: 450, y: 384 };
         this._showColorPicker = false;
-        this._canDraw = true;
+        this._numDrawsThisTurn = 0;
     }
     GameComponent.prototype.ngOnInit = function () {
         this.preparePIXI();
@@ -199,7 +199,7 @@ var GameComponent = (function () {
     GameComponent.prototype.evaluatePlayedCard = function (card) {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
             || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
-            this.pullCardSpriteFromPlayerCards(card);
+            this.removeCardSpriteFromPlayerCards(card);
             this._gameService.playCard(card.cardModel);
             this.resetPlayerForNextTurn();
         }
@@ -209,10 +209,20 @@ var GameComponent = (function () {
     };
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     GameComponent.prototype.drawCard = function () {
-        if (this._gameService.isCurrentPlayer && this._canDraw && TweenMax.getAllTweens().length == 0) {
-            this._canDraw = false;
+        if (this._numDrawsThisTurn > 0)
+            return;
+        if (!this.playPossible() && TweenMax.getAllTweens().length == 0) {
+            this._numDrawsThisTurn++;
             this._gameService.drawCard();
         }
+    };
+    GameComponent.prototype.playPossible = function () {
+        var cardInPlayModel = this._cardInPlay.cardModel;
+        var playableCards = this._playerCards.filter(function (card) {
+            return card.cardModel.id == cardInPlayModel.id ||
+                card.cardModel.color == cardInPlayModel.color;
+        });
+        //return playableCards.length > 0 && this._gameService.isCurrentPlayer;
     };
     GameComponent.prototype.opponentPlayedCard = function () {
         var r = Math.floor(Math.random() * this._opponentCards.length);
@@ -265,41 +275,12 @@ var GameComponent = (function () {
     /*
       GAME EVALUATIONS
     */
-    GameComponent.prototype.evaluateGame = function (gameState) {
-        TweenLite.killTweensOf(this.evaluateLastMove);
-        TweenLite.delayedCall(.3, this.evaluateLastMove, [gameState], this);
-    };
-    // TODO - move and use enum
-    GameComponent.prototype.evaluateLastMove = function (gameState) {
-        // switch (gameState.lastMoveType) {
-        //     case "draw":
-        //         if (this._gameService.isCurrentPlayer && !this.isPlayPossible(gameState)) this.pass();
-        //         break;
-        //     case "draw2":
-        //         if (this._gameService.isCurrentPlayer) this.drawMultipleCards(2);
-        //         break;
-        //     case "draw4":
-        //         if (this._gameService.isCurrentPlayer) this.drawMultipleCards(4);
-        //         break;
-        //     default:
-        //         break;
-        // }
-    };
     GameComponent.prototype.drawMultipleCards = function (numCards) {
         this._gameService.drawMultipleCards(numCards);
     };
-    GameComponent.prototype.isPlayPossible = function (gameState) {
-        for (var _i = 0, _a = gameState.hand; _i < _a.length; _i++) {
-            var card = _a[_i];
-            if ((card.value == gameState.cardInPlay.value
-                || card.color == gameState.cardInPlay.color))
-                return true;
-        }
-        return false;
-    };
     GameComponent.prototype.resetPlayerForNextTurn = function () {
         this.renderPlayerCards();
-        this._canDraw = true;
+        this._numDrawsThisTurn = 0;
     };
     GameComponent.prototype.pass = function () {
         this._gameService.pass();
@@ -321,7 +302,7 @@ var GameComponent = (function () {
         this._stage.removeChild(sprite);
         this._stage.addChild(sprite);
     };
-    GameComponent.prototype.pullCardSpriteFromPlayerCards = function (card) {
+    GameComponent.prototype.removeCardSpriteFromPlayerCards = function (card) {
         this._playerCards = this._playerCards.filter(function (c) { return card.cardModel.id != c.cardModel.id; });
     };
     //update canvas

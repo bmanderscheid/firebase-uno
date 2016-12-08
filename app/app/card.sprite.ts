@@ -25,6 +25,7 @@ export class CardSprite extends PIXI.Sprite {
         else this.texture = PIXI.Texture.fromFrame("wild-" + this._cardModel.color + ".png");
     }
 
+    // get set
     get cardModel(): CardModel {
         return this._cardModel;
     }

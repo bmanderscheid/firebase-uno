@@ -154,13 +154,40 @@ export class FirebaseService {
     */
 
     playCard(card: CardModel): void {
-        let moveType: string = card.opponentDraw ? "draw" + card.opponentDraw : "play";
         let updates: Object = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
         updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(updates, () => this.updatePlayerCardsInHand());
     }
+
+    // possibly meld into regular play card method
+    playDrawCard(card: CardModel, opponentId: string): void {
+        this.getDeck()
+            .then(snapshot => this.test(snapshot.val(), card.opponentDraw, opponentId));
+        
+        
+        let updates: Object = {};
+        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
+        updates[this._gameId + "/gameState/cardInPlay"] = card;
+        updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
+        firebase.database().ref().update(updates, () => this.updatePlayerCardsInHand());
+    }
+
+    test(deck, numCards: number, opponentId: string): void {
+        let cards: Object[] = Object.keys(deck).map(key => deck[key]); // turn deck into array
+        cards = this.sortCards(cards); // order array by deck order
+        let updates: Object = {};
+        for (let i = 0; i < numCards; i++) {
+            let card: any = cards.pop();
+            updates[this._gameId + "/deck/" + card.id] = null;
+            updates[this._gameId + "/playerHands/" + opponentId + "/" + card.id] = card;
+        }
+        firebase.database().ref()
+            .update(updates, () => this.updatePlayerCardsInHand());
+    }
+
+
 
     pass(): void {
         let update: Object = {};
@@ -172,7 +199,6 @@ export class FirebaseService {
     updatePlayerCardsInHand(): void {
         let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + this._playerId);
         ref.once('value')
-            //.then(snapshot => ref.update({ cardsInHand: Number(snapshot.val().cardsInHand) + numCards }));
             .then(snapshot =>
                 firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId)
                     .update({ cardsInHand: Object.keys(snapshot.val()).length }));
