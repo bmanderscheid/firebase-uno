@@ -201,6 +201,12 @@ export class GameComponent implements OnInit {
         }
     }
 
+    private renderGame(): void {
+        // possibly evaluate this on gamestate update
+        if (this._playerCards.length > 0) this.renderPlayerCards();
+        if (this._opponentCards.length > 0) this.renderOpponentCards();
+        this.renderCardInPlay();
+    }
 
     // GAME PLAY
 
@@ -252,7 +258,7 @@ export class GameComponent implements OnInit {
         let cardInPlayModel: CardModel = this._cardInPlay.cardModel;
         let playableCards: CardSprite[] = this._playerCards.filter(card =>
             card.cardModel.id == cardInPlayModel.id ||
-            card.cardModel.color == cardInPlayModel.color);        
+            card.cardModel.color == cardInPlayModel.color);
         return playableCards.length > 0 && this._gameService.isCurrentPlayer;
     }
 
@@ -274,56 +280,6 @@ export class GameComponent implements OnInit {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    /*
-      GAME UPDTATE 
-    */
-
-
-
-
-
-
-
-
-
-
     private spawnCard(cardModel): CardSprite {
         let card: CardSprite = new CardSprite(cardModel);
         card.render();
@@ -332,30 +288,6 @@ export class GameComponent implements OnInit {
         card.position.set(this.DECK_POS.x, this.DECK_POS.y);
         return card;
     }
-
-    /*   
-      GAME RENDER     
-    */
-
-    private renderGame(): void {
-        // possibly evaluate this on gamestate update
-        if (this._playerCards.length > 0) this.renderPlayerCards();
-        if (this._opponentCards.length > 0) this.renderOpponentCards();
-        this.renderCardInPlay();
-    }
-
-
-
-
-
-    // combine function with render player cards
-
-
-    /*   
-        GAME PLAY    
-    */
-
-
 
     private colorPickerClicked(color: string): void {
         this._currentWildCard.updateForWild(color);

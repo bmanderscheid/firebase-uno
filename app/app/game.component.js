@@ -173,6 +173,14 @@ var GameComponent = (function () {
             xPos += sprite.width;
         }
     };
+    GameComponent.prototype.renderGame = function () {
+        // possibly evaluate this on gamestate update
+        if (this._playerCards.length > 0)
+            this.renderPlayerCards();
+        if (this._opponentCards.length > 0)
+            this.renderOpponentCards();
+        this.renderCardInPlay();
+    };
     // GAME PLAY
     GameComponent.prototype.cardSelected = function (card) {
         if (!this._gameService.isCurrentPlayer)
@@ -240,9 +248,6 @@ var GameComponent = (function () {
             this._opponentCards.push(card);
         }
     };
-    /*
-      GAME UPDTATE
-    */
     GameComponent.prototype.spawnCard = function (cardModel) {
         var card = new card_sprite_1.CardSprite(cardModel);
         card.render();
@@ -251,21 +256,6 @@ var GameComponent = (function () {
         card.position.set(this.DECK_POS.x, this.DECK_POS.y);
         return card;
     };
-    /*
-      GAME RENDER
-    */
-    GameComponent.prototype.renderGame = function () {
-        // possibly evaluate this on gamestate update
-        if (this._playerCards.length > 0)
-            this.renderPlayerCards();
-        if (this._opponentCards.length > 0)
-            this.renderOpponentCards();
-        this.renderCardInPlay();
-    };
-    // combine function with render player cards
-    /*
-        GAME PLAY
-    */
     GameComponent.prototype.colorPickerClicked = function (color) {
         this._currentWildCard.updateForWild(color);
         this._showColorPicker = false;
