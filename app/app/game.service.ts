@@ -78,7 +78,7 @@ export class GameService {
 
     playCard(card: CardModel): void {
         this._firebaseService.playCard(card);
-        if (card.opponentDraw > 0) this._firebaseService.playDrawCard(card, this._opponent.uid);
+        if (card.opponentDraw > 0) this._firebaseService.playDrawCard(card, this._opponent.uid);        
     }
 
     drawCard(): void {

@@ -129,7 +129,7 @@ export class FirebaseService {
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         console.log(updates);
         firebase.database().ref()
-            .update(updates, () => this.updatePlayerCardsInHand());
+            .update(updates, () => this.updatePlayerCardsInHand(this._playerId));
     }
 
     updatePlayersHandAfterMultipleDraw(deck, numCards): void {
@@ -143,7 +143,7 @@ export class FirebaseService {
             updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         }
         firebase.database().ref()
-            .update(updates, () => this.updatePlayerCardsInHand());
+            .update(updates, () => this.updatePlayerCardsInHand(this._playerId));
     }
 
 
@@ -158,23 +158,15 @@ export class FirebaseService {
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
         updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
-        firebase.database().ref().update(updates, () => this.updatePlayerCardsInHand());
+        firebase.database().ref().update(updates, () => this.updatePlayerCardsInHand(this._playerId));
     }
-
-    // possibly meld into regular play card method
+    
     playDrawCard(card: CardModel, opponentId: string): void {
         this.getDeck()
-            .then(snapshot => this.test(snapshot.val(), card.opponentDraw, opponentId));
-        
-        
-        let updates: Object = {};
-        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
-        updates[this._gameId + "/gameState/cardInPlay"] = card;
-        updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
-        firebase.database().ref().update(updates, () => this.updatePlayerCardsInHand());
+            .then(snapshot => this.dealCardsToOpponent(snapshot.val(), card.opponentDraw, opponentId));
     }
 
-    test(deck, numCards: number, opponentId: string): void {
+    dealCardsToOpponent(deck, numCards: number, opponentId: string): void {
         let cards: Object[] = Object.keys(deck).map(key => deck[key]); // turn deck into array
         cards = this.sortCards(cards); // order array by deck order
         let updates: Object = {};
@@ -184,7 +176,7 @@ export class FirebaseService {
             updates[this._gameId + "/playerHands/" + opponentId + "/" + card.id] = card;
         }
         firebase.database().ref()
-            .update(updates, () => this.updatePlayerCardsInHand());
+            .update(updates, () => this.updatePlayerCardsInHand(opponentId));
     }
 
 
@@ -196,11 +188,11 @@ export class FirebaseService {
         firebase.database().ref().update(update);
     }
 
-    updatePlayerCardsInHand(): void {
-        let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + this._playerId);
+    updatePlayerCardsInHand(playerId: string): void {
+        let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + playerId);
         ref.once('value')
             .then(snapshot =>
-                firebase.database().ref(this._gameId + "/gameState/players/" + this._playerId)
+                firebase.database().ref(this._gameId + "/gameState/players/" + playerId)
                     .update({ cardsInHand: Object.keys(snapshot.val()).length }));
     }
 

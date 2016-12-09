@@ -103,7 +103,7 @@ var FirebaseService = (function () {
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         console.log(updates);
         firebase.database().ref()
-            .update(updates, function () { return _this.updatePlayerCardsInHand(); });
+            .update(updates, function () { return _this.updatePlayerCardsInHand(_this._playerId); });
     };
     FirebaseService.prototype.updatePlayersHandAfterMultipleDraw = function (deck, numCards) {
         var _this = this;
@@ -116,7 +116,7 @@ var FirebaseService = (function () {
             updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         }
         firebase.database().ref()
-            .update(updates, function () { return _this.updatePlayerCardsInHand(); });
+            .update(updates, function () { return _this.updatePlayerCardsInHand(_this._playerId); });
     };
     /*
         PLAYS
@@ -127,20 +127,14 @@ var FirebaseService = (function () {
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
         updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
-        firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(); });
+        firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(_this._playerId); });
     };
-    // possibly meld into regular play card method
     FirebaseService.prototype.playDrawCard = function (card, opponentId) {
         var _this = this;
         this.getDeck()
-            .then(function (snapshot) { return _this.test(snapshot.val(), card.opponentDraw, opponentId); });
-        var updates = {};
-        updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
-        updates[this._gameId + "/gameState/cardInPlay"] = card;
-        updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
-        firebase.database().ref().update(updates, function () { return _this.updatePlayerCardsInHand(); });
+            .then(function (snapshot) { return _this.dealCardsToOpponent(snapshot.val(), card.opponentDraw, opponentId); });
     };
-    FirebaseService.prototype.test = function (deck, numCards, opponentId) {
+    FirebaseService.prototype.dealCardsToOpponent = function (deck, numCards, opponentId) {
         var _this = this;
         var cards = Object.keys(deck).map(function (key) { return deck[key]; }); // turn deck into array
         cards = this.sortCards(cards); // order array by deck order
@@ -151,7 +145,7 @@ var FirebaseService = (function () {
             updates[this._gameId + "/playerHands/" + opponentId + "/" + card.id] = card;
         }
         firebase.database().ref()
-            .update(updates, function () { return _this.updatePlayerCardsInHand(); });
+            .update(updates, function () { return _this.updatePlayerCardsInHand(opponentId); });
     };
     FirebaseService.prototype.pass = function () {
         var update = {};
@@ -159,12 +153,12 @@ var FirebaseService = (function () {
         update[this._gameId + "/gameState/lastMoveType"] = "pass";
         firebase.database().ref().update(update);
     };
-    FirebaseService.prototype.updatePlayerCardsInHand = function () {
+    FirebaseService.prototype.updatePlayerCardsInHand = function (playerId) {
         var _this = this;
-        var ref = firebase.database().ref(this._gameId + "/playerHands/" + this._playerId);
+        var ref = firebase.database().ref(this._gameId + "/playerHands/" + playerId);
         ref.once('value')
             .then(function (snapshot) {
-            return firebase.database().ref(_this._gameId + "/gameState/players/" + _this._playerId)
+            return firebase.database().ref(_this._gameId + "/gameState/players/" + playerId)
                 .update({ cardsInHand: Object.keys(snapshot.val()).length });
         });
     };

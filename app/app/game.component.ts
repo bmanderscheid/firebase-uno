@@ -252,8 +252,8 @@ export class GameComponent implements OnInit {
         let cardInPlayModel: CardModel = this._cardInPlay.cardModel;
         let playableCards: CardSprite[] = this._playerCards.filter(card =>
             card.cardModel.id == cardInPlayModel.id ||
-            card.cardModel.color == cardInPlayModel.color);
-        //return playableCards.length > 0 && this._gameService.isCurrentPlayer;
+            card.cardModel.color == cardInPlayModel.color);        
+        return playableCards.length > 0 && this._gameService.isCurrentPlayer;
     }
 
     private opponentPlayedCard(): void {
@@ -375,11 +375,6 @@ export class GameComponent implements OnInit {
     /* 
       GAME EVALUATIONS
     */
-
-    private drawMultipleCards(numCards: number): void {
-        this._gameService.drawMultipleCards(numCards);
-    }
-
 
     private resetPlayerForNextTurn(): void {
         this.renderPlayerCards();

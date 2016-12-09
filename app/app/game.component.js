@@ -222,7 +222,7 @@ var GameComponent = (function () {
             return card.cardModel.id == cardInPlayModel.id ||
                 card.cardModel.color == cardInPlayModel.color;
         });
-        //return playableCards.length > 0 && this._gameService.isCurrentPlayer;
+        return playableCards.length > 0 && this._gameService.isCurrentPlayer;
     };
     GameComponent.prototype.opponentPlayedCard = function () {
         var r = Math.floor(Math.random() * this._opponentCards.length);
@@ -275,9 +275,6 @@ var GameComponent = (function () {
     /*
       GAME EVALUATIONS
     */
-    GameComponent.prototype.drawMultipleCards = function (numCards) {
-        this._gameService.drawMultipleCards(numCards);
-    };
     GameComponent.prototype.resetPlayerForNextTurn = function () {
         this.renderPlayerCards();
         this._numDrawsThisTurn = 0;
