@@ -289,6 +289,7 @@
             }
         },
         "gameData": {
+            "status": "active",
             "title": "Might be something",
             "date": "11242016",
             "players": [
@@ -307,7 +308,7 @@
             ]
         },
         "gameState": {
-            "currentPlayer": 0,            
+            "currentPlayer": 0,
             "cardInPlay": {
                 "id": "b0",
                 "color": "blue",

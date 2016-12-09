@@ -171,6 +171,7 @@ export class GameComponent implements OnInit {
         let stageCenter: number = 512;
         let widthOfHand: number = this._playerCards.length * this._playerCards[0].width;
         let xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
+        let delay = 0;
         for (let sprite of this._playerCards) {
             this._stage.addChild(sprite);
             TweenLite.to(sprite, this.GAME_SPEED, {
@@ -178,8 +179,10 @@ export class GameComponent implements OnInit {
                 onUpdateScope: this,
                 x: xPos,
                 y: this.PLAYER_REALM_Y,
+                delay: delay,
                 rotation: 360 * (Math.PI / 180)
             });
+            delay += .1;
             xPos += sprite.width;
         }
     }
@@ -211,8 +214,7 @@ export class GameComponent implements OnInit {
     // GAME PLAY
 
     private cardSelected(card: CardSprite): void {
-        if (!this._gameService.isCurrentPlayer) return;
-        this.bringSpriteToFront(card);
+        if (!this._gameService.isCurrentPlayer || !this.isCardPlayable(card)) return;
         if (card.cardModel.isWild) { // use enum
             this._currentWildCard = card;
             this._showColorPicker = true;
@@ -223,26 +225,27 @@ export class GameComponent implements OnInit {
     }
 
     private playCard(card): void {
+        this.bringSpriteToFront(card);
         TweenLite.to(card, this.GAME_SPEED, {
             x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
             onUpdateScope: this,
-            onComplete: this.evaluatePlayedCard,
+            onComplete: this.cardPlayed,
             onCompleteScope: this,
             onCompleteParams: [card]
         });
     }
 
-    private evaluatePlayedCard(card: CardSprite): void {
+    private isCardPlayable(card: CardSprite): boolean {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
-            || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
-            this.removeCardSpriteFromPlayerCards(card);
-            this._gameService.playCard(card.cardModel);
-            this.resetPlayerForNextTurn();
-        }
-        else {
-            this.renderPlayerCards();
-        }
+            || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) return true;
+        return false;
+    }
+
+    private cardPlayed(card: CardSprite): void {
+        this.removeCardSpriteFromPlayerCards(card);
+        this._gameService.playCard(card.cardModel);
+        this.resetPlayerForNextTurn();
     }
 
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all

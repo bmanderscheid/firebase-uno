@@ -32,6 +32,7 @@ var GameService = (function () {
     GameService.prototype.setGameData = function (gameData) {
         var _this = this;
         // set this player
+        console.log(gameData);
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(function (player) { return player.uid == _this._playerId; })[0];
         this._opponent = gameData.players.filter(function (player) { return player.uid != _this._playerId; })[0];
@@ -63,15 +64,16 @@ var GameService = (function () {
         GAME ACTIONS
     */
     GameService.prototype.playCard = function (card) {
-        this._firebaseService.playCard(card);
-        if (card.opponentDraw > 0)
+        if (card.opponentDraw > 0) {
+            this._firebaseService.playCard(card, false);
             this._firebaseService.playDrawCard(card, this._opponent.uid);
+        }
+        else {
+            this._firebaseService.playCard(card);
+        }
     };
     GameService.prototype.drawCard = function () {
         this._firebaseService.drawCard();
-    };
-    GameService.prototype.drawMultipleCards = function (numCards) {
-        this._firebaseService.drawMultipleCards(numCards);
     };
     GameService.prototype.pass = function () {
         this._firebaseService.pass();

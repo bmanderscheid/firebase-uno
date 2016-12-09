@@ -41,8 +41,9 @@ export class GameService {
             .then((gameData: any) => this.setGameData(gameData.val()));
     }
 
-    private setGameData(gameData: GameModel): void {
+    private setGameData(gameData: GameModel): void {        
         // set this player
+        console.log(gameData);
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(player => player.uid == this._playerId)[0];
         this._opponent = gameData.players.filter(player => player.uid != this._playerId)[0];
@@ -77,16 +78,17 @@ export class GameService {
     */
 
     playCard(card: CardModel): void {
-        this._firebaseService.playCard(card);
-        if (card.opponentDraw > 0) this._firebaseService.playDrawCard(card, this._opponent.uid);        
+        if (card.opponentDraw > 0) {
+            this._firebaseService.playCard(card, false);
+            this._firebaseService.playDrawCard(card, this._opponent.uid);
+        }
+        else {
+            this._firebaseService.playCard(card);
+        }
     }
 
     drawCard(): void {
         this._firebaseService.drawCard();
-    }
-
-    drawMultipleCards(numCards: number): void {
-        this._firebaseService.drawMultipleCards(numCards);
     }
 
     pass(): void {

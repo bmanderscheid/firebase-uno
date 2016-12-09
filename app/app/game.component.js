@@ -143,6 +143,7 @@ var GameComponent = (function () {
         var stageCenter = 512;
         var widthOfHand = this._playerCards.length * this._playerCards[0].width;
         var xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
+        var delay = 0;
         for (var _i = 0, _a = this._playerCards; _i < _a.length; _i++) {
             var sprite = _a[_i];
             this._stage.addChild(sprite);
@@ -151,8 +152,10 @@ var GameComponent = (function () {
                 onUpdateScope: this,
                 x: xPos,
                 y: this.PLAYER_REALM_Y,
+                delay: delay,
                 rotation: 360 * (Math.PI / 180)
             });
+            delay += .1;
             xPos += sprite.width;
         }
     };
@@ -183,9 +186,8 @@ var GameComponent = (function () {
     };
     // GAME PLAY
     GameComponent.prototype.cardSelected = function (card) {
-        if (!this._gameService.isCurrentPlayer)
+        if (!this._gameService.isCurrentPlayer || !this.isCardPlayable(card))
             return;
-        this.bringSpriteToFront(card);
         if (card.cardModel.isWild) {
             this._currentWildCard = card;
             this._showColorPicker = true;
@@ -195,25 +197,26 @@ var GameComponent = (function () {
         }
     };
     GameComponent.prototype.playCard = function (card) {
+        this.bringSpriteToFront(card);
         TweenLite.to(card, this.GAME_SPEED, {
             x: this.DISCARD_POS.x, y: this.DISCARD_POS.y,
             onUpdate: this.render,
             onUpdateScope: this,
-            onComplete: this.evaluatePlayedCard,
+            onComplete: this.cardPlayed,
             onCompleteScope: this,
             onCompleteParams: [card]
         });
     };
-    GameComponent.prototype.evaluatePlayedCard = function (card) {
+    GameComponent.prototype.isCardPlayable = function (card) {
         if (card.cardModel.value == this._cardInPlay.cardModel.value
-            || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild) {
-            this.removeCardSpriteFromPlayerCards(card);
-            this._gameService.playCard(card.cardModel);
-            this.resetPlayerForNextTurn();
-        }
-        else {
-            this.renderPlayerCards();
-        }
+            || card.cardModel.color == this._cardInPlay.cardModel.color || card.cardModel.isWild)
+            return true;
+        return false;
+    };
+    GameComponent.prototype.cardPlayed = function (card) {
+        this.removeCardSpriteFromPlayerCards(card);
+        this._gameService.playCard(card.cardModel);
+        this.resetPlayerForNextTurn();
     };
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     GameComponent.prototype.drawCard = function () {
