@@ -42,8 +42,7 @@ export class GameService {
     }
 
     private setGameData(gameData: GameModel): void {        
-        // set this player
-        console.log(gameData);
+        // set this player        
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(player => player.uid == this._playerId)[0];
         this._opponent = gameData.players.filter(player => player.uid != this._playerId)[0];

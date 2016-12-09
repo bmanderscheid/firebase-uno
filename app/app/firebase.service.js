@@ -147,8 +147,9 @@ var FirebaseService = (function () {
         });
     };
     FirebaseService.prototype.pass = function () {
+        console.log("pass");
         var update = {};
-        update[this._gameId + "/gameState/currentPlayer"] = this._cardInPlaySource.value.currentPlayer == 0 ? 1 : 0;
+        update[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(update);
     };
     // UTILITY

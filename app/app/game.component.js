@@ -88,7 +88,7 @@ var GameComponent = (function () {
     //GAME CHAGES
     GameComponent.prototype.cardInPlayChanged = function (cardModl) {
         this.updateCardInPlay(cardModl);
-        this.renderCardInPlay(); // could be an issue.  Card might render in deck pos before getting opp turn update   
+        this.renderCardInPlay();
     };
     GameComponent.prototype.updatePlayerHand = function (cardModel) {
         this.updatePlayerCards(cardModel);
@@ -158,6 +158,8 @@ var GameComponent = (function () {
             delay += .1;
             xPos += sprite.width;
         }
+        TweenLite.killTweensOf(this.evaluatePlayerHand);
+        TweenLite.delayedCall(delay + this.GAME_SPEED, this.evaluatePlayerHand, null, this);
     };
     GameComponent.prototype.renderOpponentCards = function () {
         var stageCenter = 512;
@@ -230,7 +232,8 @@ var GameComponent = (function () {
     GameComponent.prototype.playPossible = function () {
         var cardInPlayModel = this._cardInPlay.cardModel;
         var playableCards = this._playerCards.filter(function (card) {
-            return card.cardModel.id == cardInPlayModel.id ||
+            return card.cardModel.isWild ||
+                card.cardModel.id == cardInPlayModel.id ||
                 card.cardModel.color == cardInPlayModel.color;
         });
         return playableCards.length > 0 && this._gameService.isCurrentPlayer;
@@ -268,6 +271,10 @@ var GameComponent = (function () {
     /*
       GAME EVALUATIONS
     */
+    GameComponent.prototype.evaluatePlayerHand = function () {
+        if (this._gameService.isCurrentPlayer && !this.playPossible())
+            this._gameService.pass();
+    };
     GameComponent.prototype.resetPlayerForNextTurn = function () {
         this.renderPlayerCards();
         this._numDrawsThisTurn = 0;

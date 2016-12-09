@@ -172,8 +172,9 @@ export class FirebaseService {
     }
 
     pass(): void {
+        console.log("pass");
         let update: Object = {};
-        update[this._gameId + "/gameState/currentPlayer"] = this._cardInPlaySource.value.currentPlayer == 0 ? 1 : 0;
+        update[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(update);
     }
 

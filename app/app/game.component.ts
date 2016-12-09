@@ -110,12 +110,12 @@ export class GameComponent implements OnInit {
 
     private cardInPlayChanged(cardModl: CardModel): void {
         this.updateCardInPlay(cardModl);
-        this.renderCardInPlay(); // could be an issue.  Card might render in deck pos before getting opp turn update   
+        this.renderCardInPlay();
     }
 
     private updatePlayerHand(cardModel: CardModel): void {
         this.updatePlayerCards(cardModel);
-        this.renderPlayerCards();
+        this.renderPlayerCards();        
     }
 
     private updateOpponentHands(playerHandCounts: any): void {
@@ -185,6 +185,8 @@ export class GameComponent implements OnInit {
             delay += .1;
             xPos += sprite.width;
         }
+        TweenLite.killTweensOf(this.evaluatePlayerHand);
+        TweenLite.delayedCall(delay + this.GAME_SPEED, this.evaluatePlayerHand, null, this);
     }
 
     private renderOpponentCards(): void {
@@ -260,6 +262,7 @@ export class GameComponent implements OnInit {
     private playPossible(): boolean {
         let cardInPlayModel: CardModel = this._cardInPlay.cardModel;
         let playableCards: CardSprite[] = this._playerCards.filter(card =>
+            card.cardModel.isWild ||
             card.cardModel.id == cardInPlayModel.id ||
             card.cardModel.color == cardInPlayModel.color);
         return playableCards.length > 0 && this._gameService.isCurrentPlayer;
@@ -310,6 +313,10 @@ export class GameComponent implements OnInit {
     /* 
       GAME EVALUATIONS
     */
+
+    private evaluatePlayerHand(): void {
+        if (this._gameService.isCurrentPlayer && !this.playPossible()) this._gameService.pass();
+    }
 
     private resetPlayerForNextTurn(): void {
         this.renderPlayerCards();

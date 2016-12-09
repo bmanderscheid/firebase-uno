@@ -31,8 +31,7 @@ var GameService = (function () {
     };
     GameService.prototype.setGameData = function (gameData) {
         var _this = this;
-        // set this player
-        console.log(gameData);
+        // set this player        
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(function (player) { return player.uid == _this._playerId; })[0];
         this._opponent = gameData.players.filter(function (player) { return player.uid != _this._playerId; })[0];
