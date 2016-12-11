@@ -222,7 +222,7 @@ var GameComponent = (function () {
     };
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     GameComponent.prototype.drawCard = function () {
-        if (this._numDrawsThisTurn > 0)
+        if (this._numDrawsThisTurn > 0 || !this._gameService.isCurrentPlayer)
             return;
         if (!this.playPossible() && TweenMax.getAllTweens().length == 0) {
             this._numDrawsThisTurn++;
@@ -233,10 +233,10 @@ var GameComponent = (function () {
         var cardInPlayModel = this._cardInPlay.cardModel;
         var playableCards = this._playerCards.filter(function (card) {
             return card.cardModel.isWild ||
-                card.cardModel.id == cardInPlayModel.id ||
+                card.cardModel.value == cardInPlayModel.value ||
                 card.cardModel.color == cardInPlayModel.color;
         });
-        return playableCards.length > 0 && this._gameService.isCurrentPlayer;
+        return playableCards.length > 0;
     };
     GameComponent.prototype.opponentPlayedCard = function () {
         var r = Math.floor(Math.random() * this._opponentCards.length);
@@ -272,8 +272,11 @@ var GameComponent = (function () {
       GAME EVALUATIONS
     */
     GameComponent.prototype.evaluatePlayerHand = function () {
-        if (this._gameService.isCurrentPlayer && !this.playPossible())
-            this._gameService.pass();
+        console.log("draws", this._numDrawsThisTurn);
+        if (this._gameService.isCurrentPlayer
+            && !this.playPossible()
+            && this._numDrawsThisTurn > 0)
+            this.pass();
     };
     GameComponent.prototype.resetPlayerForNextTurn = function () {
         this.renderPlayerCards();

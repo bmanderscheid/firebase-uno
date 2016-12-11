@@ -115,7 +115,7 @@ export class GameComponent implements OnInit {
 
     private updatePlayerHand(cardModel: CardModel): void {
         this.updatePlayerCards(cardModel);
-        this.renderPlayerCards();        
+        this.renderPlayerCards();
     }
 
     private updateOpponentHands(playerHandCounts: any): void {
@@ -252,7 +252,7 @@ export class GameComponent implements OnInit {
 
     //TODO -using current tween list to determine if a move can be made.  Use more or not at all
     private drawCard(): void {
-        if (this._numDrawsThisTurn > 0) return;
+        if (this._numDrawsThisTurn > 0 || !this._gameService.isCurrentPlayer) return;
         if (!this.playPossible() && TweenMax.getAllTweens().length == 0) {
             this._numDrawsThisTurn++;
             this._gameService.drawCard();
@@ -263,9 +263,9 @@ export class GameComponent implements OnInit {
         let cardInPlayModel: CardModel = this._cardInPlay.cardModel;
         let playableCards: CardSprite[] = this._playerCards.filter(card =>
             card.cardModel.isWild ||
-            card.cardModel.id == cardInPlayModel.id ||
+            card.cardModel.value == cardInPlayModel.value ||
             card.cardModel.color == cardInPlayModel.color);
-        return playableCards.length > 0 && this._gameService.isCurrentPlayer;
+        return playableCards.length > 0;
     }
 
     private opponentPlayedCard(): void {
@@ -315,7 +315,10 @@ export class GameComponent implements OnInit {
     */
 
     private evaluatePlayerHand(): void {
-        if (this._gameService.isCurrentPlayer && !this.playPossible()) this._gameService.pass();
+        console.log("draws", this._numDrawsThisTurn);
+        if (this._gameService.isCurrentPlayer
+            && !this.playPossible()
+            && this._numDrawsThisTurn > 0) this.pass();
     }
 
     private resetPlayerForNextTurn(): void {
