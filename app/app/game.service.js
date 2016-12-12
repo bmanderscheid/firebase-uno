@@ -18,7 +18,7 @@ var BehaviorSubject_1 = require('rxjs/BehaviorSubject');
 var GameService = (function () {
     function GameService(_firebaseService) {
         this._firebaseService = _firebaseService;
-        this._currentGameState = new game_state_model_1.GameStateChange();
+        this._currentGameState = new game_state_model_1.GameState();
         this._gameStateSource = new BehaviorSubject_1.BehaviorSubject(this._currentGameState);
         this._gameState = this._gameStateSource.asObservable();
     }
@@ -46,8 +46,10 @@ var GameService = (function () {
             _this.sendNextGameState();
         });
         this._firebaseService.oppoentHandCount.subscribe(function (data) {
-            _this._currentGameState.playerHandCounts = data;
-            _this._currentGameState.moveType = game_values_1.MoveType.PLAYER_HAND_COUNTS_UPDATED;
+            if (!data)
+                return;
+            _this._currentGameState.opponentHandCount = data[_this._opponent.uid].cardsInHand;
+            _this._currentGameState.moveType = game_values_1.MoveType.OPPONENT_HAND_UPDATED;
             _this.sendNextGameState();
         });
         this._firebaseService.cardInPlay.subscribe(function (card) {

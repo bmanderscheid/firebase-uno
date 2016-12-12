@@ -2,7 +2,7 @@
 import { Injectable, OnInit } from '@angular/core';
 import { Http } from '@angular/http';
 import { FirebaseService } from '../app/firebase.service'
-import { GameStateChange } from '../app/game-state.model'
+import { GameState } from '../app/game-state.model'
 import { CardModel } from '../app/card.model'
 import { PlayerModel } from '../app/player.model';
 import { GameModel } from '../app/game.model';
@@ -16,10 +16,10 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 export class GameService {
 
-    private _currentGameState: GameStateChange; // used to build game state
+    private _currentGameState: GameState; // used to build game state
 
-    private _gameState: Observable<GameStateChange>; // used to shoot component the current game state
-    private _gameStateSource: BehaviorSubject<GameStateChange>;
+    private _gameState: Observable<GameState>; // used to shoot component the current game state
+    private _gameStateSource: BehaviorSubject<GameState>;
 
     private _currentPlayerIndex: number;
 
@@ -29,8 +29,8 @@ export class GameService {
     private _opponent: PlayerModel; // gross - tied to 2 player only
 
     constructor(private _firebaseService: FirebaseService) {
-        this._currentGameState = new GameStateChange();
-        this._gameStateSource = new BehaviorSubject<GameStateChange>(this._currentGameState);
+        this._currentGameState = new GameState();
+        this._gameStateSource = new BehaviorSubject<GameState>(this._currentGameState);
         this._gameState = this._gameStateSource.asObservable();
     }
 
@@ -41,7 +41,7 @@ export class GameService {
             .then((gameData: any) => this.setGameData(gameData.val()));
     }
 
-    private setGameData(gameData: GameModel): void {        
+    private setGameData(gameData: GameModel): void {
         // set this player        
         this._playerId = this._firebaseService.playerId; //change how you set this        
         this._player = gameData.players.filter(player => player.uid == this._playerId)[0];
@@ -56,9 +56,10 @@ export class GameService {
             this._currentGameState.moveType = MoveType.CARD_ADDED_TO_HAND;
             this.sendNextGameState();
         });
-        this._firebaseService.oppoentHandCount.subscribe((data: any) => {
-            this._currentGameState.playerHandCounts = data;
-            this._currentGameState.moveType = MoveType.PLAYER_HAND_COUNTS_UPDATED;
+        this._firebaseService.oppoentHandCount.subscribe((data: any) => {     
+            if(!data)return;       
+            this._currentGameState.opponentHandCount = data[this._opponent.uid].cardsInHand;
+            this._currentGameState.moveType = MoveType.OPPONENT_HAND_UPDATED;
             this.sendNextGameState();
         });
         this._firebaseService.cardInPlay.subscribe((card: CardModel) => {
@@ -103,7 +104,7 @@ export class GameService {
 
     //GET SET
 
-    get gameState(): Observable<GameStateChange> {
+    get gameState(): Observable<GameState> {
         return this._gameState;
     }
 

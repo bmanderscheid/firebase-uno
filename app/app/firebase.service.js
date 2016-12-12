@@ -59,7 +59,7 @@ var FirebaseService = (function () {
     };
     FirebaseService.prototype.init = function () {
         var _this = this;
-        firebase.database().ref(this._gameId + "/gameState/players") // chage players fb node name
+        firebase.database().ref(this._gameId + "/gameState/players")
             .on('value', function (snapshot) {
             _this._oppoentHandCountSource.next(snapshot.val());
         });

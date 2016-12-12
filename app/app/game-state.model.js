@@ -1,8 +1,8 @@
 "use strict";
-var GameStateChange = (function () {
-    function GameStateChange() {
+var GameState = (function () {
+    function GameState() {
     }
-    return GameStateChange;
+    return GameState;
 }());
-exports.GameStateChange = GameStateChange;
+exports.GameState = GameState;
 //# sourceMappingURL=game-state.model.js.map

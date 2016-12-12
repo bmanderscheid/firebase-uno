@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GameService } from '../app/game.service';
-import { GameStateChange } from '../app/game-state.model'
+import { GameState } from '../app/game-state.model'
 import { CardSprite } from '../app/card.sprite';
 import { CardModel } from '../app/card.model';
 import { PlayerModel } from '../app/player.model';
@@ -22,20 +22,17 @@ export class GameComponent implements OnInit {
     private PLAYER_REALM_Y: number = 640;
     private OPPONENT_REALM_Y: number = 140;
     private DISCARD_POS: any = { x: 600, y: 384 }
-    private DECK_POS: any = { x: 450, y: 384 }
-
-    //game play
-    private _numDrawsThisTurn: number;
-    private _currentWildCard: CardSprite;
+    private DECK_POS: any = { x: 450, y: 384 }    
 
     //sprites
     private _playerCards: CardSprite[];
     private _opponentCards: PIXI.Sprite[];
     private _deck: PIXI.Sprite;
-
     private _cardInPlay: CardSprite;
-
-    //dom
+    private _currentWildCard: CardSprite;
+    
+    //game play
+    private _numDrawsThisTurn: number;
     private _showColorPicker: boolean;
 
     constructor(private _gameService: GameService) {
@@ -65,16 +62,16 @@ export class GameComponent implements OnInit {
         this.initGame();
     }
 
-    private initGame(): void {
-        // draw initial UI
+    private initGame(): void {    
         this.drawUI();
-        this.initGameSubscriptions();
+        this.initGameService();
 
         // initialize sprite containers
         this._playerCards = [];
         this._opponentCards = [];
     }
 
+    // draw initial UI
     private drawUI(): void {
         this._deck = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
         this._deck.position.set(this.DECK_POS.x, this.DECK_POS.y);
@@ -84,21 +81,20 @@ export class GameComponent implements OnInit {
         this._stage.addChild(this._deck);
     }
 
-    private initGameSubscriptions(): void {
-        // init service and subscribe to game state changes
+    private initGameService(): void {        
         this._gameService.init();
-        this._gameService.gameState.subscribe((gameState: GameStateChange) => {
+        this._gameService.gameState.subscribe((gameState: GameState) => {
             if (gameState) this.gameStateChanged(gameState);
         });
     }
 
-    private gameStateChanged(gameState: GameStateChange): void {
+    private gameStateChanged(gameState: GameState): void {
         switch (gameState.moveType) {
             case MoveType.CARD_ADDED_TO_HAND:
                 if (gameState.cardAddedToHand) this.updatePlayerHand(gameState.cardAddedToHand);
                 break;
-            case MoveType.PLAYER_HAND_COUNTS_UPDATED:
-                if (gameState.playerHandCounts) this.updateOpponentHands(gameState.playerHandCounts);
+            case MoveType.OPPONENT_HAND_UPDATED:
+                if (gameState.opponentHandCount) this.updateOpponentHand(gameState.opponentHandCount);
                 break;
             case MoveType.CARD_IN_PLAY_UPDATED: // card played
                 if (gameState.cardInPlay) this.cardInPlayChanged(gameState.cardInPlay);
@@ -118,7 +114,7 @@ export class GameComponent implements OnInit {
         this.renderPlayerCards();
     }
 
-    private updateOpponentHands(playerHandCounts: any): void {
+    private updateOpponentHand(playerHandCounts: any): void {
         let opponents: any[] = Object.keys(playerHandCounts).
             map(key => playerHandCounts[key])
             .filter(player => player.uid != this._gameService.playerId);

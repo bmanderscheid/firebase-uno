@@ -44,13 +44,13 @@ var GameComponent = (function () {
         this.initGame();
     };
     GameComponent.prototype.initGame = function () {
-        // draw initial UI
         this.drawUI();
-        this.initGameSubscriptions();
+        this.initGameService();
         // initialize sprite containers
         this._playerCards = [];
         this._opponentCards = [];
     };
+    // draw initial UI
     GameComponent.prototype.drawUI = function () {
         var _this = this;
         this._deck = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
@@ -60,9 +60,8 @@ var GameComponent = (function () {
         this._deck.on("mousedown", function (e) { return _this.drawCard(); });
         this._stage.addChild(this._deck);
     };
-    GameComponent.prototype.initGameSubscriptions = function () {
+    GameComponent.prototype.initGameService = function () {
         var _this = this;
-        // init service and subscribe to game state changes
         this._gameService.init();
         this._gameService.gameState.subscribe(function (gameState) {
             if (gameState)
@@ -75,9 +74,9 @@ var GameComponent = (function () {
                 if (gameState.cardAddedToHand)
                     this.updatePlayerHand(gameState.cardAddedToHand);
                 break;
-            case game_values_1.MoveType.PLAYER_HAND_COUNTS_UPDATED:
-                if (gameState.playerHandCounts)
-                    this.updateOpponentHands(gameState.playerHandCounts);
+            case game_values_1.MoveType.OPPONENT_HAND_UPDATED:
+                if (gameState.opponentHandCount)
+                    this.updateOpponentHand(gameState.opponentHandCount);
                 break;
             case game_values_1.MoveType.CARD_IN_PLAY_UPDATED:
                 if (gameState.cardInPlay)
@@ -94,7 +93,7 @@ var GameComponent = (function () {
         this.updatePlayerCards(cardModel);
         this.renderPlayerCards();
     };
-    GameComponent.prototype.updateOpponentHands = function (playerHandCounts) {
+    GameComponent.prototype.updateOpponentHand = function (playerHandCounts) {
         var _this = this;
         var opponents = Object.keys(playerHandCounts).
             map(function (key) { return playerHandCounts[key]; })

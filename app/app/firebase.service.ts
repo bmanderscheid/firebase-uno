@@ -5,7 +5,7 @@ import 'rxjs/add/operator/toPromise';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
 
-import { GameStateChange } from '../app/game-state.model'
+import { GameState } from '../app/game-state.model'
 import { CardModel } from '../app/card.model';
 import { GameModel } from '../app/game.model';
 import { PlayerModel } from '../app/player.model';
@@ -83,7 +83,7 @@ export class FirebaseService {
     }
 
     init(): void {
-        firebase.database().ref(this._gameId + "/gameState/players") // chage players fb node name
+        firebase.database().ref(this._gameId + "/gameState/players")
             .on('value', snapshot => {
                 this._oppoentHandCountSource.next(snapshot.val());
             });
