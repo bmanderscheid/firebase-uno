@@ -21,6 +21,7 @@ var GameComponent = (function () {
         this.OPPONENT_REALM_Y = 140;
         this.DISCARD_POS = { x: 600, y: 384 };
         this.DECK_POS = { x: 450, y: 384 };
+        this.CARD_SIZE = { width: 98, height: 130 };
         this._showColorPicker = false;
         this._numDrawsThisTurn = 0;
     }
@@ -132,7 +133,7 @@ var GameComponent = (function () {
     };
     GameComponent.prototype.renderPlayerCards = function () {
         var stageCenter = 512;
-        var widthOfHand = this._playerCards.length * this._playerCards[0].width;
+        var widthOfHand = this._playerCards.length * this.CARD_SIZE.width;
         var xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
         var delay = 0;
         for (var _i = 0, _a = this._playerCards; _i < _a.length; _i++) {

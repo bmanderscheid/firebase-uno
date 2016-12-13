@@ -21,8 +21,9 @@ export class GameComponent implements OnInit {
     private GAME_SPEED: number = .5
     private PLAYER_REALM_Y: number = 640;
     private OPPONENT_REALM_Y: number = 140;
-    private DISCARD_POS: any = { x: 600, y: 384 }
-    private DECK_POS: any = { x: 450, y: 384 }    
+    private DISCARD_POS: any = { x: 600, y: 384 };
+    private DECK_POS: any = { x: 450, y: 384 };  
+    private CARD_SIZE:any ={ width:98, height:130 };  
 
     //sprites
     private _playerCards: CardSprite[];
@@ -161,7 +162,7 @@ export class GameComponent implements OnInit {
 
     private renderPlayerCards(): void {
         let stageCenter: number = 512;
-        let widthOfHand: number = this._playerCards.length * this._playerCards[0].width;
+        let widthOfHand: number = this._playerCards.length * this.CARD_SIZE.width;
         let xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
         let delay = 0;
         for (let sprite of this._playerCards) {
