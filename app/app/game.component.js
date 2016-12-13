@@ -71,16 +71,13 @@ var GameComponent = (function () {
     GameComponent.prototype.gameStateChanged = function (gameState) {
         switch (gameState.moveType) {
             case game_values_1.MoveType.CARD_ADDED_TO_HAND:
-                if (gameState.cardAddedToHand)
-                    this.updatePlayerHand(gameState.cardAddedToHand);
+                this.updatePlayerHand(gameState.cardAddedToHand);
                 break;
             case game_values_1.MoveType.OPPONENT_HAND_UPDATED:
-                if (gameState.opponentHandCount)
-                    this.updateOpponentHand(gameState.opponentHandCount);
+                this.updateOpponentHand(gameState.opponentHandCount);
                 break;
             case game_values_1.MoveType.CARD_IN_PLAY_UPDATED:
-                if (gameState.cardInPlay)
-                    this.cardInPlayChanged(gameState.cardInPlay);
+                this.cardInPlayChanged(gameState.cardInPlay);
                 break;
         }
     };
@@ -93,13 +90,8 @@ var GameComponent = (function () {
         this.updatePlayerCards(cardModel);
         this.renderPlayerCards();
     };
-    GameComponent.prototype.updateOpponentHand = function (playerHandCounts) {
-        var _this = this;
-        var opponents = Object.keys(playerHandCounts).
-            map(function (key) { return playerHandCounts[key]; })
-            .filter(function (player) { return player.uid != _this._gameService.playerId; });
-        var opponent = opponents[0];
-        this.updateOpponentCards(opponent.cardsInHand);
+    GameComponent.prototype.updateOpponentHand = function (opponentHandCount) {
+        this.updateOpponentCards(opponentHandCount);
         this.renderOpponentCards();
     };
     //GAME UPDATES

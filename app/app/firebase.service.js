@@ -41,7 +41,6 @@ var FirebaseService = (function () {
         var _this = this;
         firebase.auth().onAuthStateChanged(function (user) {
             if (user) {
-                console.log("DEBUG: auth changed, user in");
                 if (!_this._playerId) {
                     _this._playerId = user.uid;
                     _this.init();
@@ -59,7 +58,7 @@ var FirebaseService = (function () {
     };
     FirebaseService.prototype.init = function () {
         var _this = this;
-        firebase.database().ref(this._gameId + "/gameState/players")
+        firebase.database().ref(this._gameId + "/gameState/playerHandCounts")
             .on('value', function (snapshot) {
             _this._oppoentHandCountSource.next(snapshot.val());
         });
@@ -109,7 +108,6 @@ var FirebaseService = (function () {
         var updates = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
-        //updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(updates, function () { return _this.updatePlayerState(_this._playerId, pass); });
     };
     FirebaseService.prototype.playDrawCard = function (card, opponentId) {
@@ -135,14 +133,13 @@ var FirebaseService = (function () {
     FirebaseService.prototype.updatePlayerState = function (playerId, changePlayer) {
         var _this = this;
         if (changePlayer === void 0) { changePlayer = false; }
-        console.log("update player with change? ", changePlayer);
         var updates = {};
         if (changePlayer)
             updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         var ref = firebase.database().ref(this._gameId + "/playerHands/" + playerId);
         ref.once('value')
             .then(function (snapshot) {
-            updates[_this._gameId + "/gameState/players/" + playerId + "/cardsInHand"] = Object.keys(snapshot.val()).length;
+            updates[_this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] = Object.keys(snapshot.val()).length;
             firebase.database().ref().update(updates);
         });
     };

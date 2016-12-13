@@ -41,6 +41,8 @@ var GameService = (function () {
         var _this = this;
         this._firebaseService.currentPlayerIndex.subscribe(function (playerIndex) { return _this._currentPlayerIndex = playerIndex; });
         this._firebaseService.playerHand.subscribe(function (card) {
+            if (!card)
+                return;
             _this._currentGameState.cardAddedToHand = card;
             _this._currentGameState.moveType = game_values_1.MoveType.CARD_ADDED_TO_HAND;
             _this.sendNextGameState();
@@ -53,6 +55,8 @@ var GameService = (function () {
             _this.sendNextGameState();
         });
         this._firebaseService.cardInPlay.subscribe(function (card) {
+            if (!card)
+                return;
             _this._currentGameState.cardInPlay = card;
             _this._currentGameState.moveType = game_values_1.MoveType.CARD_IN_PLAY_UPDATED;
             _this.sendNextGameState();

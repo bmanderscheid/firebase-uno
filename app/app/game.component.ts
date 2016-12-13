@@ -91,13 +91,13 @@ export class GameComponent implements OnInit {
     private gameStateChanged(gameState: GameState): void {
         switch (gameState.moveType) {
             case MoveType.CARD_ADDED_TO_HAND:
-                if (gameState.cardAddedToHand) this.updatePlayerHand(gameState.cardAddedToHand);
+                this.updatePlayerHand(gameState.cardAddedToHand);
                 break;
             case MoveType.OPPONENT_HAND_UPDATED:
-                if (gameState.opponentHandCount) this.updateOpponentHand(gameState.opponentHandCount);
+                this.updateOpponentHand(gameState.opponentHandCount);
                 break;
             case MoveType.CARD_IN_PLAY_UPDATED: // card played
-                if (gameState.cardInPlay) this.cardInPlayChanged(gameState.cardInPlay);
+                this.cardInPlayChanged(gameState.cardInPlay);
                 break;
         }
     }
@@ -114,12 +114,8 @@ export class GameComponent implements OnInit {
         this.renderPlayerCards();
     }
 
-    private updateOpponentHand(playerHandCounts: any): void {
-        let opponents: any[] = Object.keys(playerHandCounts).
-            map(key => playerHandCounts[key])
-            .filter(player => player.uid != this._gameService.playerId);
-        let opponent: any = opponents[0];
-        this.updateOpponentCards(opponent.cardsInHand);
+    private updateOpponentHand(opponentHandCount: number): void {        
+        this.updateOpponentCards(opponentHandCount);
         this.renderOpponentCards();
     }
 

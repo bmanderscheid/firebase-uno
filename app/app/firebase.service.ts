@@ -62,8 +62,7 @@ export class FirebaseService {
     // should come in via dashboard / log in
     auth(): void {
         firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                console.log("DEBUG: auth changed, user in");
+            if (user) {                
                 if (!this._playerId) {
                     this._playerId = user.uid;
                     this.init();
@@ -83,7 +82,7 @@ export class FirebaseService {
     }
 
     init(): void {
-        firebase.database().ref(this._gameId + "/gameState/players")
+        firebase.database().ref(this._gameId + "/gameState/playerHandCounts")
             .on('value', snapshot => {
                 this._oppoentHandCountSource.next(snapshot.val());
             });
@@ -135,7 +134,6 @@ export class FirebaseService {
         let updates: Object = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
-        //updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         firebase.database().ref().update(updates, () => this.updatePlayerState(this._playerId, pass));
     }
 
@@ -160,13 +158,12 @@ export class FirebaseService {
     // update number of cards in hand and current 
     // question this - but on right track as it doesnt change player until important data is set on FB
     updatePlayerState(playerId: string, changePlayer: boolean = false): void {
-        console.log("update player with change? ", changePlayer);
         let updates: Object = {};
         if (changePlayer) updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + playerId);
         ref.once('value')
             .then(snapshot => {
-                updates[this._gameId + "/gameState/players/" + playerId + "/cardsInHand"] = Object.keys(snapshot.val()).length;
+                updates[this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] = Object.keys(snapshot.val()).length;
                 firebase.database().ref().update(updates);
             });
     }

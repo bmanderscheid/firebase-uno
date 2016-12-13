@@ -314,14 +314,12 @@
                 "color": "blue",
                 "value": 0
             },
-            "players": {
+            "playerHandCounts": {
                 "mMI6BagTRqP11P9c8lhoqsQ3Mxd2": {
-                    "cardsInHand": 4,
-                    "uid": "mMI6BagTRqP11P9c8lhoqsQ3Mxd2"
+                    "cardsInHand": 4
                 },
                 "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
-                    "cardsInHand": 5,
-                    "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2"
+                    "cardsInHand": 5
                 }
             }
         }

@@ -52,17 +52,19 @@ export class GameService {
     private startGame(): void {
         this._firebaseService.currentPlayerIndex.subscribe((playerIndex: number) => this._currentPlayerIndex = playerIndex);
         this._firebaseService.playerHand.subscribe((card: CardModel) => {
+            if(!card)return;
             this._currentGameState.cardAddedToHand = card;
             this._currentGameState.moveType = MoveType.CARD_ADDED_TO_HAND;
             this.sendNextGameState();
         });
-        this._firebaseService.oppoentHandCount.subscribe((data: any) => {     
-            if(!data)return;       
+        this._firebaseService.oppoentHandCount.subscribe((data: any) => {                
+            if(!data)return;                    
             this._currentGameState.opponentHandCount = data[this._opponent.uid].cardsInHand;
             this._currentGameState.moveType = MoveType.OPPONENT_HAND_UPDATED;
             this.sendNextGameState();
         });
         this._firebaseService.cardInPlay.subscribe((card: CardModel) => {
+            if(!card)return;
             this._currentGameState.cardInPlay = card;
             this._currentGameState.moveType = MoveType.CARD_IN_PLAY_UPDATED
             this.sendNextGameState();
