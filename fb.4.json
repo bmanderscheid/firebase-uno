@@ -1,0 +1,313 @@
+{
+    "game_1234": {
+        "deck": {
+            "r1": {
+                "id": "r1",
+                "color": "red",
+                "value": 1,
+                "deckOrder": 9
+            },
+            "g8": {
+                "id": "g8",
+                "color": "green",
+                "value": 8,
+                "deckOrder": 10
+            },
+            "y2": {
+                "id": "y2",
+                "color": "yellow",
+                "value": 2,
+                "deckOrder": 11
+            },
+            "r2": {
+                "id": "r2",
+                "color": "red",
+                "value": 2,
+                "deckOrder": 12
+            },
+            "r4": {
+                "id": "r4",
+                "color": "red",
+                "value": 4,
+                "deckOrder": 13
+            },
+            "b6": {
+                "id": "b6",
+                "color": "blue",
+                "value": 6,
+                "deckOrder": 14
+            },
+            "y1": {
+                "id": "y1",
+                "color": "yellow",
+                "value": 1,
+                "deckOrder": 15
+            },
+            "y6": {
+                "id": "y6",
+                "color": "yellow",
+                "value": 6,
+                "deckOrder": 16
+            },
+            "r3": {
+                "id": "r3",
+                "color": "red",
+                "value": 3,
+                "deckOrder": 17
+            },
+            "y3": {
+                "id": "y3",
+                "color": "yellow",
+                "value": 3,
+                "deckOrder": 18
+            },
+            "g7": {
+                "id": "g7",
+                "color": "green",
+                "value": 7,
+                "deckOrder": 19
+            },
+            "y7": {
+                "id": "y7",
+                "color": "yellow",
+                "value": 7,
+                "deckOrder": 20
+            },
+            "g3": {
+                "id": "g3",
+                "color": "green",
+                "value": 3,
+                "deckOrder": 21
+            },
+            "y5": {
+                "id": "y5",
+                "color": "yellow",
+                "value": 5,
+                "deckOrder": 22
+            },
+            "g4": {
+                "id": "g4",
+                "color": "green",
+                "value": 4,
+                "deckOrder": 23
+            },
+            "y4": {
+                "id": "y4",
+                "color": "yellow",
+                "value": 4,
+                "deckOrder": 24
+            },
+            "b4": {
+                "id": "b4",
+                "color": "blue",
+                "value": 4,
+                "deckOrder": 25
+            },
+            "g0": {
+                "id": "g0",
+                "color": "green",
+                "value": 0,
+                "deckOrder": 26
+            },
+            "y0": {
+                "id": "y0",
+                "color": "yellow",
+                "value": 0,
+                "deckOrder": 27
+            },
+            "r9": {
+                "id": "r9",
+                "color": "red",
+                "value": 9,
+                "deckOrder": 28
+            },
+            "b5": {
+                "id": "b5",
+                "color": "blue",
+                "value": 5,
+                "deckOrder": 29
+            },
+            "b9": {
+                "id": "b9",
+                "color": "blue",
+                "value": 9,
+                "deckOrder": 30
+            },
+            "b3": {
+                "id": "b3",
+                "color": "blue",
+                "value": 3,
+                "deckOrder": 31
+            },
+            "r5": {
+                "id": "r5",
+                "color": "red",
+                "value": 5,
+                "deckOrder": 32
+            },
+            "r0": {
+                "id": "r0",
+                "color": "red",
+                "value": 0,
+                "deckOrder": 33
+            },
+            "r7": {
+                "id": "r7",
+                "color": "red",
+                "value": 7,
+                "deckOrder": 34
+            },
+            "y9": {
+                "id": "y9",
+                "color": "yellow",
+                "value": 9,
+                "deckOrder": 35
+            },
+            "y8": {
+                "id": "y8",
+                "color": "yellow",
+                "value": 8,
+                "deckOrder": 36
+            },
+            "b7": {
+                "id": "b7",
+                "color": "blue",
+                "value": 7,
+                "deckOrder": 37
+            },
+            "wild1": {
+                "id": "wild1",
+                "color": "",
+                "value": -1,
+                "deckOrder": 38,
+                "isWild": true
+            },
+            "wild-draw4": {
+                "id": "wild-draw4",
+                "color": "",
+                "value": -1,
+                "deckOrder": 39,
+                "opponentDraw": 4,
+                "isWild": true
+            },
+            "draw2-red": {
+                "id": "draw2-red",
+                "color": "red",
+                "value": -2,
+                "opponentDraw": 2,
+                "deckOrder": 40
+            },
+            "draw2-green": {
+                "id": "draw2-green",
+                "color": "green",
+                "value": -2,
+                "opponentDraw": 2,
+                "deckOrder": 41
+            },
+            "draw2-yellow": {
+                "id": "draw2-yellow",
+                "color": "yellow",
+                "value": -2,
+                "opponentDraw": 2,
+                "deckOrder": 42
+            },
+            "draw2-blue": {
+                "id": "draw2-blue",
+                "color": "blue",
+                "value": -2,
+                "opponentDraw": 2,
+                "deckOrder": 43
+            }
+        },
+        "playerHands": {
+            "mMI6BagTRqP11P9c8lhoqsQ3Mxd2": {
+                "b8": {
+                    "id": "b8",
+                    "color": "blue",
+                    "rendered": true,
+                    "value": 8,
+                    "deckOrder": 1
+                },
+                "b1": {
+                    "id": "b1",
+                    "color": "blue",
+                    "rendered": true,
+                    "value": 1,
+                    "deckOrder": 3
+                }
+            },
+            "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
+                "r8": {
+                    "id": "r8",
+                    "color": "red",
+                    "rendered": true,
+                    "value": 8,
+                    "deckOrder": 4
+                },
+                "r6": {
+                    "id": "r6",
+                    "color": "red",
+                    "rendered": true,
+                    "value": 6,
+                    "deckOrder": 5
+                },
+                "g1": {
+                    "id": "g1",
+                    "color": "green",
+                    "rendered": true,
+                    "value": 1,
+                    "deckOrder": 6
+                },
+                "g5": {
+                    "id": "g5",
+                    "color": "green",
+                    "rendered": true,
+                    "value": 5,
+                    "deckOrder": 7
+                },
+                "b2": {
+                    "id": "b2",
+                    "color": "blue",
+                    "rendered": true,
+                    "value": 2,
+                    "deckOrder": 8
+                }
+            }
+        },
+        "gameData": {
+            "status": "active",
+            "title": "Might be something",
+            "date": "11242016",
+            "players": [
+                {
+                    "turnOrder": 0,
+                    "name": "Brad Manderscheid",
+                    "pic": "",
+                    "uid": "mMI6BagTRqP11P9c8lhoqsQ3Mxd2"
+                },
+                {
+                    "turnOrder": 1,
+                    "name": "Zach Nelson",
+                    "pic": "",
+                    "uid": "JLNl39V9SZc1ri8FXe7bVCFbyBN2"
+                }
+            ]
+        },
+        "gameState": {
+            "currentPlayer": 0,
+            "cardInPlay": {
+                "id": "b0",
+                "color": "blue",
+                "value": 0
+            },
+            "playerHandCounts": {
+                "mMI6BagTRqP11P9c8lhoqsQ3Mxd2": {
+                    "cardsInHand": 2
+                },
+                "JLNl39V9SZc1ri8FXe7bVCFbyBN2": {
+                    "cardsInHand": 5
+                }
+            }
+        }
+    }
+}

@@ -22,8 +22,8 @@ export class GameComponent implements OnInit {
     private PLAYER_REALM_Y: number = 640;
     private OPPONENT_REALM_Y: number = 140;
     private DISCARD_POS: any = { x: 600, y: 384 };
-    private DECK_POS: any = { x: 450, y: 384 };  
-    private CARD_SIZE:any ={ width:98, height:130 };  
+    private DECK_POS: any = { x: 450, y: 384 };
+    private CARD_SIZE: any = { width: 98, height: 130 };
 
     //sprites
     private _playerCards: CardSprite[];
@@ -31,7 +31,7 @@ export class GameComponent implements OnInit {
     private _deck: PIXI.Sprite;
     private _cardInPlay: CardSprite;
     private _currentWildCard: CardSprite;
-    
+
     //game play
     private _numDrawsThisTurn: number;
     private _showColorPicker: boolean;
@@ -63,7 +63,7 @@ export class GameComponent implements OnInit {
         this.initGame();
     }
 
-    private initGame(): void {    
+    private initGame(): void {
         this.drawUI();
         this.initGameService();
 
@@ -82,7 +82,7 @@ export class GameComponent implements OnInit {
         this._stage.addChild(this._deck);
     }
 
-    private initGameService(): void {        
+    private initGameService(): void {
         this._gameService.init();
         this._gameService.gameState.subscribe((gameState: GameState) => {
             if (gameState) this.gameStateChanged(gameState);
@@ -115,7 +115,7 @@ export class GameComponent implements OnInit {
         this.renderPlayerCards();
     }
 
-    private updateOpponentHand(opponentHandCount: number): void {        
+    private updateOpponentHand(opponentHandCount: number): void {
         this.updateOpponentCards(opponentHandCount);
         this.renderOpponentCards();
     }
@@ -131,39 +131,31 @@ export class GameComponent implements OnInit {
         let card: CardSprite = this.spawnCard(cardModel);
         card.on("mousedown", (e) => this.cardSelected(e.target));
         this._playerCards.push(card);
-        // sort cards
         this._playerCards = this.sortCards(this._playerCards);
     }
 
-
-    // this is a two player game - but using a possible multiple oppoent approach
     private updateOpponentCards(numCards: number): void {
         let cardsDifference: number = numCards - this._opponentCards.length;
-        if (this._opponentCards.length < 1) this.updateAllOpponentCardsOnStart(numCards);
-        else if (cardsDifference < 0) this.opponentPlayedCard();
+        if (cardsDifference < 0) this.opponentPlayedCard();
         else if (cardsDifference > 0) this.opponentDrewCard(cardsDifference);
-    }
-
-    private updateAllOpponentCardsOnStart(numCards: number): void {
-        for (let i = 0; i < numCards; i++) {
-            let card: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.fromFrame("back.png"));
-            card.anchor.set(.5, .5);
-            card.position.set(100, 50);
-            this._opponentCards.push(card);
-        }
     }
 
     //GAME RENDERS
 
     private renderCardInPlay(): void {
         this._stage.addChild(this._cardInPlay);
-        TweenLite.to(this._cardInPlay, this.GAME_SPEED, { x: this.DISCARD_POS.x, y: this.DISCARD_POS.y });
+        TweenLite.to(this._cardInPlay, this.GAME_SPEED, {
+            x: this.DISCARD_POS.x,
+            y: this.DISCARD_POS.y,
+            onUpdate: this.render,
+            onUpdateScope: this
+        });
     }
 
     private renderPlayerCards(): void {
         let stageCenter: number = 512;
         let widthOfHand: number = this._playerCards.length * this.CARD_SIZE.width;
-        let xPos = stageCenter - (widthOfHand / 2) + (this._playerCards[0].width / 2);
+        let xPos = stageCenter - (widthOfHand / 2) + (this.CARD_SIZE.width / 2);
         let delay = 0;
         for (let sprite of this._playerCards) {
             this._stage.addChild(sprite);
@@ -184,8 +176,8 @@ export class GameComponent implements OnInit {
 
     private renderOpponentCards(): void {
         let stageCenter: number = 512;
-        let widthOfHand: number = this._opponentCards.length * this._opponentCards[0].width;
-        let xPos = stageCenter - (widthOfHand / 2) + (this._opponentCards[0].width / 2);
+        let widthOfHand: number = this._opponentCards.length * this.CARD_SIZE.width;
+        let xPos = stageCenter - (widthOfHand / 2) + (this.CARD_SIZE.width / 2);
         for (let sprite of this._opponentCards) {
             this._stage.addChild(sprite);
             TweenLite.to(sprite, this.GAME_SPEED, {
@@ -285,6 +277,7 @@ export class GameComponent implements OnInit {
         card.interactive = true;
         card.anchor.set(.5, .5);
         card.position.set(this.DECK_POS.x, this.DECK_POS.y);
+        this.bringSpriteToFront(card);
         return card;
     }
 
@@ -308,7 +301,6 @@ export class GameComponent implements OnInit {
     */
 
     private evaluatePlayerHand(): void {
-        console.log("draws", this._numDrawsThisTurn);
         if (this._gameService.isCurrentPlayer
             && !this.playPossible()
             && this._numDrawsThisTurn > 0) this.pass();

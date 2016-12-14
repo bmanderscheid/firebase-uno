@@ -97,7 +97,7 @@ var FirebaseService = (function () {
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         console.log(updates);
         firebase.database().ref()
-            .update(updates, function () { return _this.updatePlayerState(_this._playerId); });
+            .update(updates, function () { return _this.updateGame(_this._playerId); });
     };
     /*
         PLAYS
@@ -108,7 +108,7 @@ var FirebaseService = (function () {
         var updates = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
-        firebase.database().ref().update(updates, function () { return _this.updatePlayerState(_this._playerId, pass); });
+        firebase.database().ref().update(updates, function () { return _this.updateGame(_this._playerId, pass); });
     };
     FirebaseService.prototype.playDrawCard = function (card, opponentId) {
         var _this = this;
@@ -126,20 +126,27 @@ var FirebaseService = (function () {
             updates[this._gameId + "/playerHands/" + opponentId + "/" + card.id] = card;
         }
         firebase.database().ref()
-            .update(updates, function () { return _this.updatePlayerState(opponentId, true); });
+            .update(updates, function () { return _this.updateGame(opponentId, true); });
     };
     // update number of cards in hand and current 
     // question this - but on right track as it doesnt change player until important data is set on FB
-    FirebaseService.prototype.updatePlayerState = function (playerId, changePlayer) {
+    FirebaseService.prototype.updateGame = function (playerId, changePlayer) {
         var _this = this;
         if (changePlayer === void 0) { changePlayer = false; }
         var updates = {};
-        if (changePlayer)
-            updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         var ref = firebase.database().ref(this._gameId + "/playerHands/" + playerId);
         ref.once('value')
             .then(function (snapshot) {
-            updates[_this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] = Object.keys(snapshot.val()).length;
+            if (snapshot.val()) {
+                updates[_this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] =
+                    Object.keys(snapshot.val()).length;
+                if (changePlayer)
+                    updates[_this._gameId + "/gameState/currentPlayer"] = _this._currentPlayerIndexSource.value == 0 ? 1 : 0;
+            }
+            else {
+                updates[_this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] = 0;
+                updates[_this._gameId + "/gameData/status"] = "complete";
+            }
             firebase.database().ref().update(updates);
         });
     };

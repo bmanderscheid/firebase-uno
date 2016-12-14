@@ -38,7 +38,7 @@ export class FirebaseService {
 
     constructor() {
         this._playerHandSource = new BehaviorSubject<CardModel>(null);
-        this._playerHand = this._playerHandSource.asObservable();        
+        this._playerHand = this._playerHandSource.asObservable();
 
         this._oppoentHandCountSource = new BehaviorSubject<any>(null);
         this._oppoentHandCount = this._oppoentHandCountSource.asObservable();
@@ -62,7 +62,7 @@ export class FirebaseService {
     // should come in via dashboard / log in
     auth(): void {
         firebase.auth().onAuthStateChanged((user) => {
-            if (user) {                
+            if (user) {
                 if (!this._playerId) {
                     this._playerId = user.uid;
                     this.init();
@@ -123,18 +123,18 @@ export class FirebaseService {
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = card;
         console.log(updates);
         firebase.database().ref()
-            .update(updates, () => this.updatePlayerState(this._playerId));
+            .update(updates, () => this.updateGame(this._playerId));
     }
 
     /* 
         PLAYS
     */
 
-    playCard(card: CardModel,pass:boolean = true): void {
+    playCard(card: CardModel, pass: boolean = true): void {
         let updates: Object = {};
         updates[this._gameId + "/playerHands/" + this._playerId + "/" + card.id] = null;
         updates[this._gameId + "/gameState/cardInPlay"] = card;
-        firebase.database().ref().update(updates, () => this.updatePlayerState(this._playerId, pass));
+        firebase.database().ref().update(updates, () => this.updateGame(this._playerId, pass));
     }
 
     playDrawCard(card: CardModel, opponentId: string): void {
@@ -152,18 +152,25 @@ export class FirebaseService {
             updates[this._gameId + "/playerHands/" + opponentId + "/" + card.id] = card;
         }
         firebase.database().ref()
-            .update(updates, () => this.updatePlayerState(opponentId, true));
+            .update(updates, () => this.updateGame(opponentId, true));
     }
 
     // update number of cards in hand and current 
     // question this - but on right track as it doesnt change player until important data is set on FB
-    updatePlayerState(playerId: string, changePlayer: boolean = false): void {
+    updateGame(playerId: string, changePlayer: boolean = false): void {
         let updates: Object = {};
-        if (changePlayer) updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
         let ref: any = firebase.database().ref(this._gameId + "/playerHands/" + playerId);
         ref.once('value')
             .then(snapshot => {
-                updates[this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] = Object.keys(snapshot.val()).length;
+                if (snapshot.val()) {
+                    updates[this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] =
+                        Object.keys(snapshot.val()).length;
+                    if (changePlayer) updates[this._gameId + "/gameState/currentPlayer"] = this._currentPlayerIndexSource.value == 0 ? 1 : 0;
+                }
+                else {
+                    updates[this._gameId + "/gameState/playerHandCounts/" + playerId + "/cardsInHand"] = 0;
+                    updates[this._gameId + "/gameData/status"] = "complete";
+                }
                 firebase.database().ref().update(updates);
             });
     }
